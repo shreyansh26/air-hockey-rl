@@ -14,7 +14,7 @@ func load_actor(path: String) -> String:
 	if not parsed is Dictionary:
 		return "Invalid actor manifest: " + path
 	manifest = parsed
-	if manifest.get("schema_version") != 1 or manifest.get("dims") != [52, 64, 64, 2] or manifest.get("activations") != ["tanh", "tanh", "clip"] or manifest.get("matrix_order") != "row-major":
+	if manifest.get("schema_version") != 1 or manifest.get("dims") != [52.0, 64.0, 64.0, 2.0] or manifest.get("activations") != ["tanh", "tanh", "clip"] or manifest.get("matrix_order") != "row-major":
 		return "Unsupported actor contract: " + path
 	var schema = JSON.parse_string(FileAccess.get_file_as_string("res://models/schema.json"))
 	if not schema is Dictionary or manifest.get("physics_hash") != schema.get("physics_hash") or manifest.get("schema_hash") != FileAccess.get_sha256("res://models/schema.json") or manifest.get("physics_hz") != 120 or manifest.get("action_ticks") != 4:

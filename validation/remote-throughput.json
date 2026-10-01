@@ -1,0 +1,27 @@
+{
+  "host": "Linux-5.15.0-131-generic-x86_64-with-glibc2.35",
+  "cpus": 384,
+  "engine_worker_threads": 4,
+  "results": [
+    {
+      "processes": 1,
+      "arenas_per_process": 16,
+      "transitions_per_second": 5855.417616398758
+    },
+    {
+      "processes": 2,
+      "arenas_per_process": 16,
+      "transitions_per_second": 12146.810540130335
+    },
+    {
+      "processes": 4,
+      "arenas_per_process": 16,
+      "transitions_per_second": 19414.377944810156
+    },
+    {
+      "processes": 8,
+      "arenas_per_process": 16,
+      "transitions_per_second": 28994.09373504002
+    }
+  ]
+}

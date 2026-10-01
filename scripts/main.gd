@@ -324,6 +324,13 @@ func _physics_process(delta: float) -> void:
 			if actor:
 				var started := Time.get_ticks_usec()
 				var action: Vector2 = actor.predict(history.encode(actor.delay_ticks))
+				if actor.error:
+					model_error = actor.error
+					arena.set_running(false)
+					state = "results"
+					_clear_panel("MODEL ERROR", model_error)
+					_button("Menu", _menu)
+					return
 				actor_times.append((Time.get_ticks_usec() - started) / 1000.0)
 				if actor_times.size() > 3600:
 					actor_times.pop_front()

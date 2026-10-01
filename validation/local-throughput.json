@@ -1,0 +1,27 @@
+{
+  "host": "macOS-27.0-arm64-arm-64bit",
+  "cpus": 12,
+  "engine_worker_threads": 4,
+  "results": [
+    {
+      "processes": 1,
+      "arenas_per_process": 16,
+      "transitions_per_second": 4192.913252796876
+    },
+    {
+      "processes": 2,
+      "arenas_per_process": 16,
+      "transitions_per_second": 5376.751363691497
+    },
+    {
+      "processes": 4,
+      "arenas_per_process": 16,
+      "transitions_per_second": 12230.639828383211
+    },
+    {
+      "processes": 8,
+      "arenas_per_process": 16,
+      "transitions_per_second": 12143.978109169842
+    }
+  ]
+}

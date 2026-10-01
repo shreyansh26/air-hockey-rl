@@ -39,6 +39,7 @@ func _ready() -> void:
 		arena.add_child(controller)
 		controller.initialize(arena, seed_value + i * 1009)
 		controller.delay_ticks = int(options.get("delay", "10"))
+		controller.opening_serve = i % 2
 		controllers.append(controller)
 	get_tree().paused = true
 	deadline = Time.get_ticks_msec() + timeout_msec
@@ -151,13 +152,19 @@ func _handle(message: Dictionary) -> void:
 				controller.limit_ticks = clampi(int(message.get("limit_ticks", controller.limit_ticks)), 4, 36000)
 				controller.shaping = clampf(float(message.get("shaping", controller.shaping)), 0, 0.1)
 				controller.hit_reward = clampf(float(message.get("hit_reward", controller.hit_reward)), 0, 0.1)
+				controller.opponent_mode = str(message.get("opponent_mode", controller.opponent_mode))
+				controller.fixed_style = str(message.get("opponent_style", controller.fixed_style))
+				controller.evaluation_match = bool(message.get("evaluation_match", controller.evaluation_match))
 				if message.has("opponents"):
 					controller.opponents.assign(message.opponents)
+			if message.has("rng_states"):
+				for i in range(controllers.size()):
+					controllers[i].rng.state = int(message.rng_states[i])
 			_send({"type": "configured"})
 		"inspect":
 			var states := []
 			for controller in controllers:
-				states.append({"ticks": controller.arena.ticks, "integration_ticks": controller.arena.puck.integration_ticks, "episode_ticks": controller.episode_ticks, "puck": [controller.arena.puck.position.x, controller.arena.puck.position.y], "velocity": [controller.arena.puck.linear_velocity.x, controller.arena.puck.linear_velocity.y], "world": str(controller.arena.get_world_2d().get_instance_id())})
+				states.append({"ticks": controller.arena.ticks, "rng_state": str(controller.rng.state), "integration_ticks": controller.arena.puck.integration_ticks, "episode_ticks": controller.episode_ticks, "puck": [controller.arena.puck.position.x, controller.arena.puck.position.y], "velocity": [controller.arena.puck.linear_velocity.x, controller.arena.puck.linear_velocity.y], "world": str(controller.arena.get_world_2d().get_instance_id())})
 			_send({"type": "inspect", "states": states})
 		"fixture":
 			var index := clampi(int(message.get("index", 0)), 0, controllers.size() - 1)

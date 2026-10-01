@@ -25,6 +25,12 @@ var gamma := 0.99
 var potential := 0.0
 var active_mode := "defense"
 var last_sample_tick := 0
+var opponent_mode := "mixed"
+var fixed_style := "intercept"
+var evaluation_match := false
+var match_scores := [0, 0]
+var opening_serve := 0
+var next_serve := -1
 var rng := RandomNumberGenerator.new()
 
 func initialize(value: Node2D, seed_value: int) -> void:
@@ -49,13 +55,25 @@ func reset_episode() -> void:
 	if mode == "mixed":
 		active_mode = ["defense", "attack", "rally"][rng.randi_range(0, 2)]
 	var serve := rng.randi_range(0, 1)
+	if evaluation_match:
+		if next_serve < 0:
+			serve = opening_serve
+			opening_serve = 1 - opening_serve
+		else:
+			serve = next_serve
 	arena.reset_rally(serve)
 	opponent_style = ["center", "chase", "intercept"][rng.randi_range(0, 2)]
+	if opponent_mode == "fixed":
+		opponent_style = fixed_style
 	opponent = null
-	if not opponents.is_empty() and rng.randf() < 0.35:
+	if not opponents.is_empty() and (opponent_mode == "fixed" or rng.randf() < 0.35):
 		var candidate = POLICY.new()
-		if candidate.load_actor(opponents[rng.randi_range(0, opponents.size() - 1)]) == "":
-			opponent = candidate
+		var error: String = candidate.load_actor(opponents[rng.randi_range(0, opponents.size() - 1)])
+		if error:
+			push_error("Frozen opponent: " + error)
+			get_tree().quit(2)
+			return
+		opponent = candidate
 	if active_mode == "defense":
 		arena.paddles[0].reset_at(Vector2(rng.randf_range(200, 400), 850))
 		arena.puck.reset_at(Vector2(rng.randf_range(70, 530), rng.randf_range(340, 500)), Vector2(rng.randf_range(-600, 600), rng.randf_range(500, 1000)))
@@ -121,6 +139,12 @@ func _goal(side: int) -> void:
 	capture_history()
 	terminated = true
 	winner = side
+	if evaluation_match:
+		match_scores[side] += 1
+		next_serve = 1 - side
+		if match_scores[side] == 7:
+			match_scores = [0, 0]
+			next_serve = -1
 	reward += (1 if side == 0 else -1) - potential
 	potential = 0
 

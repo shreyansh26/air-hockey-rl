@@ -45,7 +45,7 @@ class Progress(BaseCallback):
             self.model.save(checkpoint)
             directory = self.output / f"opponent-{progress}"
             export(checkpoint, directory, "frozen", self.config["delay_ticks"])
-            self.pool.append(str(directory / "actor.json"))
+            self.pool.append("res://" + directory.relative_to(ROOT).as_posix() + "/actor.json")
             self.pool = self.pool[-4:]
             self.training_env.env_method("configure", opponents=self.pool)
             (self.output / "opponents.json").write_text(json.dumps(self.pool, indent=2))
@@ -73,6 +73,9 @@ def train(config, resume=None):
     try:
         policy_kwargs = {"net_arch": {"pi": [64, 64], "vf": [64, 64]}, "activation_fn": torch.nn.Tanh}
         if resume:
+            old_config = Path(resume).parent / "config.json"
+            if old_config.exists() and json.loads(old_config.read_text()).get("physics_hash") != physics_hash():
+                raise ValueError("Resume checkpoint uses different physics; retrain instead")
             model = PPO.load(resume, env=env, device=config.get("device", "cpu"))
             rng_path = Path(resume).parent / "rng.pt"
             if rng_path.exists():
@@ -80,6 +83,12 @@ def train(config, resume=None):
                 torch.set_rng_state(state["torch"])
                 np.random.set_state(state["numpy"])
                 random.setstate(state["python"])
+            engine_rng_path = Path(resume).parent / "godot-rng.json"
+            if engine_rng_path.exists():
+                batches = json.loads(engine_rng_path.read_text())
+                for client, states in zip(env.venv.clients, batches):
+                    if len(states) == client.num_envs:
+                        client.command("configure", rng_states=states)
         else:
             model = PPO("MlpPolicy", env, device=config.get("device", "cpu"), seed=config["seed"], policy_kwargs=policy_kwargs,
                         verbose=1, **config["ppo"])
@@ -104,6 +113,13 @@ def train(config, resume=None):
             torch.save({"torch": torch.get_rng_state(), "numpy": np.random.get_state(), "python": random.getstate()}, output / "rng.pt")
             (output / "opponents.json").write_text(json.dumps(progress.pool, indent=2) + "\n")
             raw = env.venv
+            engine_states = []
+            for client in raw.clients:
+                try:
+                    engine_states.append([state["rng_state"] for state in client.command("inspect")["states"]])
+                except OSError:
+                    engine_states.append([]) # A failed transport still leaves a usable SB3/RNG checkpoint.
+            (output / "godot-rng.json").write_text(json.dumps(engine_states, indent=2) + "\n")
             report = {"transitions": model.num_timesteps, "wall_seconds": time.perf_counter() - progress.started,
                       "bridge_seconds": raw.bridge_seconds, "physics_hash": physics_hash(), "seed": config["seed"],
                       "delay_ticks": config["delay_ticks"], "checkpoint": str(output / "final.zip")}

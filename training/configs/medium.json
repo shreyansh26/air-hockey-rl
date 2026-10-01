@@ -1,0 +1,31 @@
+{
+  "seed": 29,
+  "arenas": 16,
+  "delay_ticks": 22,
+  "transitions": 1000000,
+  "output": "training/runs/medium",
+  "device": "cpu",
+  "torch_threads": 1,
+  "checkpoint_every": 50000,
+  "freeze_every": 1000000,
+  "eval_every": 0,
+  "curriculum": [
+    {
+      "until": 1000000,
+      "mode": "rally",
+      "hit_reward": 0,
+      "shaping": 0
+    }
+  ],
+  "ppo": {
+    "learning_rate": 0.0003,
+    "n_steps": 256,
+    "batch_size": 256,
+    "n_epochs": 5,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "ent_coef": 0.003
+  },
+  "processes": 2
+}

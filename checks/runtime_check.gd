@@ -8,6 +8,7 @@ var autoplay := false
 var soak_started := 0
 var soak_matches := 0
 var physics_report := {}
+var parity_report := {}
 var memory_samples := []
 var frame_samples: Array[float] = []
 var last_memory := 0
@@ -78,6 +79,8 @@ func _command(command: Dictionary) -> void:
 			main.arena.set_running(true)
 		"physics":
 			_run_physics()
+		"parity":
+			_run_parity()
 		"soak":
 			autoplay = true
 			soak_started = Time.get_ticks_msec()
@@ -101,6 +104,15 @@ func _run_physics() -> void:
 	cases.queue_free()
 	print("QA_PHYSICS " + JSON.stringify(physics_report))
 
+func _run_parity() -> void:
+	main._menu()
+	parity_report = {"running": true}
+	var cases = load("res://checks/parity_cases.gd").new()
+	add_child(cases)
+	parity_report = await cases.run()
+	cases.queue_free()
+	print("QA_PARITY " + JSON.stringify(parity_report))
+
 func percentile(values: Array[float], fraction: float) -> float:
 	if values.is_empty():
 		return 0
@@ -113,7 +125,7 @@ func snapshot() -> Dictionary:
 		"paddle": [main.arena.paddles[0].position.x, main.arena.paddles[0].position.y],
 		"bot": [main.arena.paddles[1].position.x, main.arena.paddles[1].position.y], "contacts": main.arena.contacts,
 		"touch_id": main.touch_id, "model_hash": main.actor.manifest.weights_sha256 if main.actor else "prototype",
-		"model_error": main.model_error, "physics": physics_report, "storage_ok": main.storage_ok,
+		"model_error": main.model_error, "physics": physics_report, "parity": parity_report, "storage_ok": main.storage_ok,
 		"origin": [main.table_origin.x, main.table_origin.y], "scale": main.table_scale,
 		"viewport": [main.size.x, main.size.y], "actor_ms_p95": percentile(main.actor_times, 0.95),
 		"frame_ms_p50": percentile(main.frames, 0.5), "frame_ms_p95": percentile(main.frames, 0.95),
