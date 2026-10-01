@@ -1,0 +1,13 @@
+.godot/
+.tools/
+builds/
+android/
+training/.venv/
+training/runs/
+__pycache__/
+*.pyc
+node_modules/
+validation/raw/
+.DS_Store
+*.keystore
+.env
