@@ -18,10 +18,10 @@ excluded from production exports.
 | Difficulty tournament | Passed fresh 2,000 complete balanced matches under corrected goals: Medium>Easy 64.5%, Hard>Medium 94.5%, Insane>Hard 93.25%; Insane beats the strong interceptor 96.75% and delayed puck-chaser 100% |
 | Human playtest | Beginner/expert calibration unverified |
 | Native E2E/offline | API 35 and API 36.1 ARM64: all four hashes/contacts, touch, pause/resume, angled goals at both ends, vanish/restore, first-to-seven, rematch, Home/Back, cosmetics persistence, offline first launch and 113 cases pass |
-| Web E2E/offline | In-app browser four-level goal/return/rematch, animation pause, 113 physics cases and 40k parity pass. Updated Safari render/rally smoke passed. Final production Firefox/Safari/offline smoke pending; Chrome disconnected, user authorized alternatives |
-| Soak | Final goal-fix 20-active-minute runs in progress on web and both AVDs; previous bounded-recorder runs completed without NaNs |
-| Performance | Recent gameplay actor p95 below 1 ms. One API 36 parity batch exceeded 1 ms under concurrent bridge checks; final isolated measurement pending. API 35 SwiftShader misses 60 FPS; final frame distributions pending |
-| Packaging | Production artifacts rebuilding with revalidated actors. Final pack/APK/AAB audit pending; training/QA excluded |
+| Web E2E/offline | In-app four-level goal/return/rematch, animation pause, 113 physics cases and 40k parity pass. Production IAB/Firefox/Safari render/control smoke and cached offline loading pass; Firefox requires an online cache warm-up. Chrome disconnected, user authorized alternatives |
+| Soak | All three runtimes completed 20 active minutes with zero escapes, stalls and NaNs: nine matches on each AVD, seven on web. Native memory is flat after warm-up; web QA memory grows, so its memory gate remains failed |
+| Performance | Recent actor p95: web 0.300 ms, API 35 0.369 ms, API 36 0.342 ms. Full-soak frame p50/p95/p99: web 16.6/16.6/16.8 ms, API 35 37.7/62.5/69.1 ms, API 36 16.6/31.2/56.9 ms. AVD frame-pacing gates fail under the recorded concurrent validation load |
+| Packaging | Production web/APK/AAB/TrainingLinux rebuilt and audited; actual production web PCK goal-flow check and production APK smokes pass. Runtime actors/profiles 139,714 bytes; training/QA/ONNX excluded |
 
 The original policies failed qualification and were replaced. See
 [bot-quality analysis](../docs/bot-quality.md) for reward/rollout diagnosis,
@@ -42,3 +42,8 @@ Shared Arena now uses the actual mouth after the full puck crosses; unexpected
 escapes freeze and re-serve without a point. Goal-only visual offset/fade never
 moves the physical body. Original checkpoint physics provenance is retained;
 fresh tournament requalified the exact weights under the new runtime hash.
+
+The web memory failure remains unresolved. Cached DOM bindings and Reduced
+effects did not remove the counter growth; those unproven changes were not
+promoted. The original implementation task owns the remaining performance
+investigation. This does not qualify production memory as stable.

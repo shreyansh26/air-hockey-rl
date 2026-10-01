@@ -115,7 +115,9 @@ Open <http://127.0.0.1:8765/index.html>. The root route redirects to this cached
 entry point. Python's server sends `.wasm` as `application/wasm`.
 Production hosting needs HTTPS for PWA storage. Single-threaded WebGL 2 export
 does not require isolation headers. Let the service worker finish caching before
-going offline; browser eviction/private storage can prevent persistent caching.
+going offline; after the first registration, reload once online to populate the
+large WASM/PCK cache before checking offline startup. Browser eviction/private
+storage can prevent persistent caching.
 After a local rebuild, close the old game tab and reopen it so the waiting
 service-worker version can activate. Keep the full export together.
 Android bundles all assets and needs no network permission.

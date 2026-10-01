@@ -1,0 +1,56 @@
+{
+  "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
+  "web_pack_sha256": "6cd13885b15eab8de2c174c44b639cf1b9cd6c6d139d7c63d928fa90754edc9a",
+  "production_apk_sha256": "bb471dd9b9163dd105d643a019a88804063be24d9078d87dc88703231c2a1675",
+  "web": {
+    "in_app_browser": {
+      "render_drag_pause": "passed",
+      "cached_offline_reload": "passed",
+      "console_errors": 0
+    },
+    "firefox": {
+      "render_drag_pause": "passed",
+      "cached_offline_reload": "passed after one online reload through the registered worker",
+      "cold_cache_first_offline_attempt": "failed; cache was not fully populated"
+    },
+    "safari": {
+      "render_rally": "passed",
+      "cached_offline_reload": "passed"
+    }
+  },
+  "android": {
+    "emulator-5560": {
+      "actual_production_apk_install": "passed",
+      "menu_rally_drag_back_pause": "passed",
+      "cold_launch_after_app_data_clear_airplane_mode": "passed",
+      "network_permissions": [
+        "android.permission.VIBRATE"
+      ],
+      "screenshots": [
+        "validation/screenshots/emulator-5560-production-menu.png",
+        "validation/screenshots/emulator-5560-production-rally.png",
+        "validation/screenshots/emulator-5560-production-paused.png",
+        "validation/screenshots/emulator-5560-production-offline.png"
+      ]
+    },
+    "emulator-5562": {
+      "actual_production_apk_install": "passed",
+      "menu_rally_drag_back_pause": "passed",
+      "cold_launch_after_app_data_clear_airplane_mode": "passed",
+      "network_permissions": [
+        "android.permission.VIBRATE"
+      ],
+      "screenshots": [
+        "validation/screenshots/emulator-5562-production-menu.png",
+        "validation/screenshots/emulator-5562-production-rally.png",
+        "validation/screenshots/emulator-5562-production-paused.png",
+        "validation/screenshots/emulator-5562-production-offline.png"
+      ]
+    }
+  },
+  "remaining_performance_gates": [
+    "API 35 SwiftShader misses 60 FPS",
+    "API 36 host-GPU soak has frame-pacing outliers",
+    "Web QA static-memory counter grows; DOM binding and reduced-effects comparisons did not isolate the cause; production memory not separately qualified"
+  ]
+}

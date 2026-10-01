@@ -1,0 +1,163 @@
+{
+  "actor_ms_p95": 0.3,
+  "all_frame_ms": {
+    "p50": 16.6,
+    "p95": 16.6,
+    "p99": 16.6,
+    "resolution_ms": 0.1,
+    "samples": 29484
+  },
+  "boot_id": "1790856592.979",
+  "bot": [
+    186.677459716797,
+    109.805999755859
+  ],
+  "contacts": [
+    16,
+    9
+  ],
+  "frame_ms_p50": 16.666,
+  "frame_ms_p95": 16.666,
+  "frame_ms_p99": 16.666,
+  "level": 1,
+  "memory": [
+    {
+      "bytes": 46188298,
+      "seconds": 30.001
+    },
+    {
+      "bytes": 47109262,
+      "seconds": 60.003
+    },
+    {
+      "bytes": 48044458,
+      "seconds": 90.005
+    },
+    {
+      "bytes": 48970724,
+      "seconds": 120.006
+    },
+    {
+      "bytes": 49767030,
+      "seconds": 150.008
+    },
+    {
+      "bytes": 50686138,
+      "seconds": 180.01
+    },
+    {
+      "bytes": 51615062,
+      "seconds": 210.012
+    },
+    {
+      "bytes": 55685386,
+      "seconds": 240.015
+    },
+    {
+      "bytes": 56612796,
+      "seconds": 270.017
+    },
+    {
+      "bytes": 57523258,
+      "seconds": 300.018
+    },
+    {
+      "bytes": 58457774,
+      "seconds": 330.019
+    },
+    {
+      "bytes": 59384564,
+      "seconds": 360.022
+    },
+    {
+      "bytes": 60288334,
+      "seconds": 390.024
+    },
+    {
+      "bytes": 61221768,
+      "seconds": 420.026
+    },
+    {
+      "bytes": 62156716,
+      "seconds": 450.028
+    },
+    {
+      "bytes": 63064466,
+      "seconds": 480.029
+    }
+  ],
+  "model_error": "",
+  "model_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
+  "origin": [
+    201.888885498047,
+    160.148147583008
+  ],
+  "paddle": [
+    143.398193359375,
+    828.768127441406
+  ],
+  "panel": "menu",
+  "parity": {},
+  "physics": {},
+  "physics_cpu_ms": 0.7,
+  "process_cpu_ms": 14,
+  "puck": [
+    215.415252685547,
+    937.532531738281
+  ],
+  "puck_alpha": 1,
+  "puck_velocity": [
+    1194.22375488281,
+    881.621948242188
+  ],
+  "puck_visual_offset": [
+    0,
+    0
+  ],
+  "qa_bridge": "cached_dom",
+  "scale": 0.703703703703704,
+  "scores": [
+    3,
+    1
+  ],
+  "settings": {
+    "bot": 1,
+    "haptics": true,
+    "human": 0,
+    "level": 1,
+    "offset": 0,
+    "puck": 0,
+    "reduced_effects": true,
+    "sound": true,
+    "table": 0
+  },
+  "simulated_rally_seconds": 412.5,
+  "soak_complete": false,
+  "soak_invalid_states": 0,
+  "soak_matches": 3,
+  "soak_out_of_bounds": 0,
+  "soak_seconds": 492.513835999713,
+  "soak_stalls": 0,
+  "soak_wall_seconds": 492.567,
+  "state": "rally",
+  "static_memory_bytes": 63454204,
+  "storage_ok": true,
+  "texture_memory_bytes": 44804133,
+  "touch_id": -1,
+  "viewport": [
+    826,
+    1000
+  ],
+  "widgets": [
+    {
+      "rect": [
+        681,
+        27,
+        115,
+        74
+      ],
+      "text": "Pause",
+      "type": "Button"
+    }
+  ]
+}

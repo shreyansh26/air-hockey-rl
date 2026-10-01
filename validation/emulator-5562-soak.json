@@ -1,0 +1,315 @@
+{
+  "actor_ms_p95": 0.342,
+  "all_frame_ms": {
+    "p50": 16.6,
+    "p95": 31.2,
+    "p99": 56.9,
+    "resolution_ms": 0.1,
+    "samples": 65341
+  },
+  "boot_id": "1790853966.92307",
+  "bot": [
+    323.578796386719,
+    47.0218658447266
+  ],
+  "contacts": [
+    7,
+    6
+  ],
+  "frame_ms_p50": 16.666,
+  "frame_ms_p95": 22.348,
+  "frame_ms_p99": 47.336,
+  "level": 1,
+  "memory": [
+    {
+      "bytes": 33993293.0,
+      "seconds": 30.001
+    },
+    {
+      "bytes": 34035201.0,
+      "seconds": 60.002
+    },
+    {
+      "bytes": 34044629.0,
+      "seconds": 90.02
+    },
+    {
+      "bytes": 33951525.0,
+      "seconds": 120.038
+    },
+    {
+      "bytes": 33963325.0,
+      "seconds": 150.085
+    },
+    {
+      "bytes": 33961637.0,
+      "seconds": 180.095
+    },
+    {
+      "bytes": 33961025.0,
+      "seconds": 210.105
+    },
+    {
+      "bytes": 33962829.0,
+      "seconds": 240.108
+    },
+    {
+      "bytes": 33971407.0,
+      "seconds": 270.111
+    },
+    {
+      "bytes": 33960045.0,
+      "seconds": 300.115
+    },
+    {
+      "bytes": 33981477.0,
+      "seconds": 330.129
+    },
+    {
+      "bytes": 33964965.0,
+      "seconds": 360.135
+    },
+    {
+      "bytes": 33973959.0,
+      "seconds": 390.137
+    },
+    {
+      "bytes": 33968273.0,
+      "seconds": 420.144
+    },
+    {
+      "bytes": 33966945.0,
+      "seconds": 450.155
+    },
+    {
+      "bytes": 33966565.0,
+      "seconds": 480.177
+    },
+    {
+      "bytes": 33967193.0,
+      "seconds": 510.182
+    },
+    {
+      "bytes": 33978943.0,
+      "seconds": 540.184
+    },
+    {
+      "bytes": 33977983.0,
+      "seconds": 570.199
+    },
+    {
+      "bytes": 33968693.0,
+      "seconds": 600.221
+    },
+    {
+      "bytes": 33968889.0,
+      "seconds": 630.232
+    },
+    {
+      "bytes": 33978835.0,
+      "seconds": 660.232
+    },
+    {
+      "bytes": 33982875.0,
+      "seconds": 690.234
+    },
+    {
+      "bytes": 33971837.0,
+      "seconds": 720.243
+    },
+    {
+      "bytes": 33971529.0,
+      "seconds": 750.254
+    },
+    {
+      "bytes": 33972901.0,
+      "seconds": 780.265
+    },
+    {
+      "bytes": 33969969.0,
+      "seconds": 810.276
+    },
+    {
+      "bytes": 33965445.0,
+      "seconds": 840.282
+    },
+    {
+      "bytes": 33973657.0,
+      "seconds": 870.286
+    },
+    {
+      "bytes": 33974189.0,
+      "seconds": 900.286
+    },
+    {
+      "bytes": 33975969.0,
+      "seconds": 930.3
+    },
+    {
+      "bytes": 33977077.0,
+      "seconds": 960.302
+    },
+    {
+      "bytes": 33986087.0,
+      "seconds": 990.305
+    },
+    {
+      "bytes": 33988871.0,
+      "seconds": 1020.307
+    },
+    {
+      "bytes": 33976993.0,
+      "seconds": 1050.383
+    },
+    {
+      "bytes": 33974949.0,
+      "seconds": 1080.384
+    },
+    {
+      "bytes": 33975625.0,
+      "seconds": 1110.403
+    },
+    {
+      "bytes": 33988051.0,
+      "seconds": 1140.415
+    },
+    {
+      "bytes": 33981533.0,
+      "seconds": 1170.42
+    },
+    {
+      "bytes": 33980661.0,
+      "seconds": 1200.421
+    }
+  ],
+  "model_error": "",
+  "model_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
+  "origin": [
+    70.5555572509766,
+    162.592590332031
+  ],
+  "paddle": [
+    464.608062744141,
+    882.3916015625
+  ],
+  "panel": "menu",
+  "parity": {
+    "easy": {
+      "max_abs_error": 1.01327896118164e-06,
+      "mean_ms": 0.2871771,
+      "observations": 10000,
+      "p95_ms": 0.464,
+      "weights_hash": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2"
+    },
+    "hard": {
+      "max_abs_error": 1.01327896118164e-06,
+      "mean_ms": 0.5682492,
+      "observations": 10000,
+      "p95_ms": 1.261,
+      "weights_hash": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7"
+    },
+    "insane": {
+      "max_abs_error": 8.64267349243164e-07,
+      "mean_ms": 0.3430215,
+      "observations": 10000,
+      "p95_ms": 0.657,
+      "weights_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325"
+    },
+    "medium": {
+      "max_abs_error": 1.2516975402832e-06,
+      "mean_ms": 0.3167694,
+      "observations": 10000,
+      "p95_ms": 0.638,
+      "weights_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61"
+    }
+  },
+  "physics": {
+    "cases": 113,
+    "check": "physics",
+    "failures": [],
+    "random_seed": 20261001
+  },
+  "physics_cpu_ms": 19.159,
+  "process_cpu_ms": 69.081,
+  "puck": [
+    226.001342773438,
+    1033.10900878906
+  ],
+  "puck_alpha": 0.0,
+  "puck_velocity": [
+    436.021423339844,
+    2134.86108398438
+  ],
+  "puck_visual_offset": [
+    0.0,
+    28.0
+  ],
+  "scale": 0.764814814814815,
+  "scores": [
+    3,
+    1
+  ],
+  "settings": {
+    "bot": 1,
+    "haptics": true,
+    "human": 0,
+    "level": 1,
+    "offset": 0.0,
+    "puck": 0,
+    "reduced_effects": false,
+    "sound": true,
+    "table": 0
+  },
+  "simulated_rally_seconds": 1000.83333333333,
+  "soak_complete": true,
+  "soak_invalid_states": 0,
+  "soak_matches": 9,
+  "soak_out_of_bounds": 0,
+  "soak_seconds": 1200.01408999962,
+  "soak_stalls": 0,
+  "soak_wall_seconds": 1229.672,
+  "state": "paused",
+  "static_memory_bytes": 34044125.0,
+  "storage_ok": true,
+  "texture_memory_bytes": 20480718.0,
+  "touch_id": -1,
+  "viewport": [
+    600.0,
+    1066.0
+  ],
+  "widgets": [
+    {
+      "rect": [
+        455.0,
+        27.0,
+        115.0,
+        74.0
+      ],
+      "text": "Pause",
+      "type": "Button"
+    },
+    {
+      "rect": [
+        93.0,
+        395.5,
+        125.0,
+        74.0
+      ],
+      "text": "Resume",
+      "type": "Button"
+    },
+    {
+      "rect": [
+        93.0,
+        395.5,
+        101.0,
+        74.0
+      ],
+      "text": "Menu",
+      "type": "Button"
+    }
+  ],
+  "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
+  "qa_apk_sha256": "405f5be3921f97169e36bd517391b1906c99773155714a577ff0809c045744b7",
+  "configuration": "API 36.1 ARM64, host GPU, 720x1280"
+}

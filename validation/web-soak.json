@@ -1,0 +1,313 @@
+{
+  "actor_ms_p95": 0.3,
+  "all_frame_ms": {
+    "p50": 16.6,
+    "p95": 16.6,
+    "p99": 16.8,
+    "resolution_ms": 0.1,
+    "samples": 71728
+  },
+  "boot_id": "1790853914.967",
+  "bot": [
+    337.262786865234,
+    114.474822998047
+  ],
+  "contacts": [
+    21,
+    15
+  ],
+  "frame_ms_p50": 16.666,
+  "frame_ms_p95": 16.666,
+  "frame_ms_p99": 17,
+  "level": 3,
+  "memory": [
+    {
+      "bytes": 61219568,
+      "seconds": 30.001
+    },
+    {
+      "bytes": 62156756,
+      "seconds": 60.003
+    },
+    {
+      "bytes": 63066790,
+      "seconds": 90.005
+    },
+    {
+      "bytes": 63990706,
+      "seconds": 120.006
+    },
+    {
+      "bytes": 64802848,
+      "seconds": 150.009
+    },
+    {
+      "bytes": 65731630,
+      "seconds": 180.011
+    },
+    {
+      "bytes": 66640240,
+      "seconds": 210.012
+    },
+    {
+      "bytes": 67559268,
+      "seconds": 240.014
+    },
+    {
+      "bytes": 68469614,
+      "seconds": 270.016
+    },
+    {
+      "bytes": 69396796,
+      "seconds": 300.018
+    },
+    {
+      "bytes": 70331960,
+      "seconds": 330.02
+    },
+    {
+      "bytes": 71251024,
+      "seconds": 360.022
+    },
+    {
+      "bytes": 72166992,
+      "seconds": 390.023
+    },
+    {
+      "bytes": 73105380,
+      "seconds": 420.024
+    },
+    {
+      "bytes": 74023800,
+      "seconds": 450.027
+    },
+    {
+      "bytes": 74942576,
+      "seconds": 480.029
+    },
+    {
+      "bytes": 82136538,
+      "seconds": 510.03
+    },
+    {
+      "bytes": 83083286,
+      "seconds": 540.033
+    },
+    {
+      "bytes": 84006884,
+      "seconds": 570.035
+    },
+    {
+      "bytes": 84917562,
+      "seconds": 600.036
+    },
+    {
+      "bytes": 85835650,
+      "seconds": 630.039
+    },
+    {
+      "bytes": 86763176,
+      "seconds": 660.04
+    },
+    {
+      "bytes": 87687482,
+      "seconds": 690.042
+    },
+    {
+      "bytes": 96978630,
+      "seconds": 720.044
+    },
+    {
+      "bytes": 92905026,
+      "seconds": 750.046
+    },
+    {
+      "bytes": 93831462,
+      "seconds": 780.047
+    },
+    {
+      "bytes": 94750226,
+      "seconds": 810.049
+    },
+    {
+      "bytes": 95682958,
+      "seconds": 840.051
+    },
+    {
+      "bytes": 96615168,
+      "seconds": 870.053
+    },
+    {
+      "bytes": 99857736,
+      "seconds": 900.055
+    },
+    {
+      "bytes": 100771334,
+      "seconds": 930.057
+    },
+    {
+      "bytes": 101687206,
+      "seconds": 960.059
+    },
+    {
+      "bytes": 100248334,
+      "seconds": 990.061
+    },
+    {
+      "bytes": 101181958,
+      "seconds": 1020.063
+    },
+    {
+      "bytes": 102076392,
+      "seconds": 1050.065
+    },
+    {
+      "bytes": 102983758,
+      "seconds": 1080.066
+    },
+    {
+      "bytes": 106005414,
+      "seconds": 1110.068
+    },
+    {
+      "bytes": 106941114,
+      "seconds": 1140.071
+    },
+    {
+      "bytes": 107868096,
+      "seconds": 1170.072
+    },
+    {
+      "bytes": 108778506,
+      "seconds": 1200.074
+    }
+  ],
+  "model_error": "",
+  "model_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325",
+  "origin": [
+    141.388885498047,
+    160.148147583008
+  ],
+  "paddle": [
+    457.888488769531,
+    783.234191894531
+  ],
+  "panel": "menu",
+  "parity": {
+    "easy": {
+      "max_abs_error": 0.00000101327896118164,
+      "mean_ms": 0.15069,
+      "observations": 10000,
+      "p95_ms": 0.2,
+      "weights_hash": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2"
+    },
+    "hard": {
+      "max_abs_error": 0.00000101327896118164,
+      "mean_ms": 0.15633,
+      "observations": 10000,
+      "p95_ms": 0.2,
+      "weights_hash": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7"
+    },
+    "insane": {
+      "max_abs_error": 8.64267349243164e-7,
+      "mean_ms": 0.14926,
+      "observations": 10000,
+      "p95_ms": 0.2,
+      "weights_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325"
+    },
+    "medium": {
+      "max_abs_error": 0.0000012516975402832,
+      "mean_ms": 0.1505,
+      "observations": 10000,
+      "p95_ms": 0.2,
+      "weights_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61"
+    }
+  },
+  "physics": {
+    "cases": 113,
+    "check": "physics",
+    "failures": [],
+    "random_seed": 20261001
+  },
+  "physics_cpu_ms": 0.6,
+  "process_cpu_ms": 9.2,
+  "puck": [
+    464.746887207031,
+    710.802917480469
+  ],
+  "puck_alpha": 1,
+  "puck_velocity": [
+    -1384.73266601562,
+    -1836.44091796875
+  ],
+  "puck_visual_offset": [
+    0,
+    0
+  ],
+  "scale": 0.703703703703704,
+  "scores": [
+    0,
+    1
+  ],
+  "settings": {
+    "bot": 1,
+    "haptics": true,
+    "human": 0,
+    "level": 3,
+    "offset": 0,
+    "puck": 0,
+    "reduced_effects": false,
+    "sound": true,
+    "table": 0
+  },
+  "simulated_rally_seconds": 1034.54166666667,
+  "soak_complete": true,
+  "soak_invalid_states": 0,
+  "soak_matches": 7,
+  "soak_out_of_bounds": 0,
+  "soak_seconds": 1200.01009666583,
+  "soak_stalls": 0,
+  "soak_wall_seconds": 1204.596,
+  "state": "paused",
+  "static_memory_bytes": 108976582,
+  "storage_ok": true,
+  "texture_memory_bytes": 47370409,
+  "touch_id": -1,
+  "viewport": [
+    705,
+    1000
+  ],
+  "widgets": [
+    {
+      "rect": [
+        560,
+        27,
+        115,
+        74
+      ],
+      "text": "Pause",
+      "type": "Button"
+    },
+    {
+      "rect": [
+        145.5,
+        362.5,
+        125,
+        74
+      ],
+      "text": "Resume",
+      "type": "Button"
+    },
+    {
+      "rect": [
+        145.5,
+        362.5,
+        101,
+        74
+      ],
+      "text": "Menu",
+      "type": "Button"
+    }
+  ],
+  "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8"
+}

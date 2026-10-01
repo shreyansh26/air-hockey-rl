@@ -1,0 +1,6 @@
+{
+  "check": "goal_flow",
+  "failures": [],
+  "web_pack_sha256": "6cd13885b15eab8de2c174c44b639cf1b9cd6c6d139d7c63d928fa90754edc9a",
+  "scope": "Actual production PCK loaded as main pack with external goal-flow assertions"
+}
