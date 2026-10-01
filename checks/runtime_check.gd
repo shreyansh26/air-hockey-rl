@@ -24,12 +24,15 @@ var js_callbacks := []
 var telemetry_enabled := true
 var silence_until := 0
 var boot_id := str(Time.get_unix_time_from_system())
+var last_goal := {}
 
 func initialize(value: Control) -> void:
 	main = value
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	process_physics_priority = 300
 	browser = OS.has_feature("web")
+	main.arena.goal.connect(func(side):
+		last_goal = {"side": side, "scores": main.scores.duplicate(), "puck": [main.arena.puck.position.x, main.arena.puck.position.y]})
 	main.arena.stalled.connect(func():
 		if soak_started > 0:
 			soak_stalls += 1
@@ -38,7 +41,7 @@ func initialize(value: Control) -> void:
 			if not main.arena.puck.position.is_finite() or not main.arena.puck.linear_velocity.is_finite():
 				soak_invalid_states += 1)
 	if browser:
-		JavaScriptBridge.eval("""(() => { let p=document.createElement('details');p.id='qa-panel';p.style='position:fixed;bottom:0;left:0;z-index:9999;background:#071621;color:white;font:12px monospace;max-width:100vw';p.innerHTML='<summary>QA</summary><input aria-label="QA command" id="qa-command" style="width:400px"><pre id="qa-state" style="max-height:100px;overflow:auto"></pre>';document.body.append(p) })()""")
+		JavaScriptBridge.eval("""(() => { let p=document.createElement('details');p.id='qa-panel';p.open=true;p.style='position:fixed;bottom:0;left:0;z-index:9999;background:#071621;color:white;font:12px monospace;max-width:100vw';p.innerHTML='<summary>QA</summary><input aria-label="QA command" id="qa-command" style="width:min(400px,95vw)"><pre id="qa-state" style="max-height:100px;overflow:auto"></pre>';document.body.append(p) })()""")
 
 func _physics_process(_delta: float) -> void:
 	if autoplay and main.state == "rally":
@@ -50,6 +53,11 @@ func _physics_process(_delta: float) -> void:
 func _process(delta: float) -> void:
 	if Time.get_ticks_msec() < silence_until:
 		return
+	# Preserve the brief completed fade so input/device polling cannot miss it.
+	if main.state == "goal" and main.arena.puck.modulate.a == 0:
+		last_goal["hidden_puck"] = [main.arena.puck.position.x, main.arena.puck.position.y]
+		last_goal["visual_offset"] = [main.arena.puck.visual_offset.x, main.arena.puck.visual_offset.y]
+		last_goal["alpha"] = main.arena.puck.modulate.a
 	if soak_started > 0:
 		if main.state in ["rally", "countdown", "goal"]:
 			soak_active_seconds += delta
@@ -182,6 +190,8 @@ func snapshot() -> Dictionary:
 	var widgets := []
 	_collect_widgets(main, widgets)
 	return {"state": main.state, "scores": main.scores, "level": main.level, "settings": main.settings,
+		"timer": main.timer, "serve_side": main.serve_side, "audio_playing": main.audio.playing, "last_goal": last_goal,
+		"board_scores": [main.human_score_label.text, main.score_label.text],
 		"physics_frame_ms": Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000,
 		"engine_frame_ms": Performance.get_monitor(Performance.TIME_PROCESS) * 1000,
 		"debug_build": OS.has_feature("debug"), "telemetry_enabled": telemetry_enabled,
@@ -190,12 +200,16 @@ func snapshot() -> Dictionary:
 		"boot_id": boot_id, "static_memory_bytes": Performance.get_monitor(Performance.MEMORY_STATIC), "texture_memory_bytes": Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED),
 		"panel": main.panel_mode, "widgets": widgets,
 		"paddle": [main.arena.paddles[0].position.x, main.arena.paddles[0].position.y],
+		"paddle_velocity": [main.arena.paddles[0].linear_velocity.x, main.arena.paddles[0].linear_velocity.y],
+		"paddle_frozen": main.arena.paddles[0].freeze, "bot_frozen": main.arena.paddles[1].freeze,
+		"puck_frozen": main.arena.puck.freeze,
 		"bot": [main.arena.paddles[1].position.x, main.arena.paddles[1].position.y], "contacts": main.arena.contacts,
 		"puck": [main.arena.puck.position.x, main.arena.puck.position.y], "puck_velocity": [main.arena.puck.linear_velocity.x, main.arena.puck.linear_velocity.y],
 		"puck_alpha": main.arena.puck.modulate.a, "puck_visual_offset": [main.arena.puck.visual_offset.x, main.arena.puck.visual_offset.y],
 		"touch_id": main.touch_id, "model_hash": main.actor.manifest.weights_sha256 if main.actor else "prototype",
 		"model_error": main.model_error, "physics": physics_report, "parity": parity_report, "storage_ok": main.storage_ok,
 		"origin": [main.table_origin.x, main.table_origin.y], "scale": main.table_scale,
+		"stretch": [main.table_stretch.x, main.table_stretch.y],
 		"viewport": [main.size.x, main.size.y], "actor_ms_p95": percentile(main.actor_times, 0.95),
 		"frame_ms_p50": percentile(main.frames, 0.5), "frame_ms_p95": percentile(main.frames, 0.95),
 		"frame_ms_p99": percentile(main.frames, 0.99), "soak_seconds": soak_active_seconds,

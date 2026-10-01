@@ -15,11 +15,18 @@ func ticks(count: int) -> void:
 	for _i in range(count):
 		await physics_frame
 
+func wait_for_state(expected: String, limit := 180) -> void:
+	for _i in range(limit):
+		if main.state == expected:
+			return
+		await physics_frame
+	check(false, "timed out waiting for " + expected)
+
 func run() -> void:
 	main = load("res://scenes/main.tscn").instantiate()
 	root.add_child(main)
 	main._start_match()
-	await ticks(260)
+	await wait_for_state("rally")
 	for side in range(2):
 		main.arena.set_running(false)
 		main.arena.paddles[0].reset_at(Vector2(80, 920))
@@ -38,9 +45,9 @@ func run() -> void:
 		await ticks(40)
 		check(main.arena.puck.position == frozen, "goal animation never moves the body")
 		check(main.arena.puck.modulate.a == 0 and main.arena.puck.visual_offset.y * (-1 if side == 0 else 1) > 0, "puck enters pocket and vanishes")
-		await ticks(100)
+		await wait_for_state("countdown")
 		check(main.state == "countdown" and main.arena.puck.modulate.a == 1 and main.arena.puck.visual_offset == Vector2.ZERO, "next serve restores puck")
-		await ticks(160)
+		await wait_for_state("rally")
 	main.scores[0] = 6
 	main.arena.set_running(false)
 	main.arena.paddles[1].reset_at(Vector2(80, 80))
@@ -49,7 +56,7 @@ func run() -> void:
 	main.arena.set_running(true)
 	await ticks(45)
 	check(main.state == "goal" and main.scores[0] == 7 and main.arena.puck.modulate.a == 0, "winning puck vanishes before results")
-	await ticks(100)
+	await wait_for_state("results")
 	check(main.state == "results", "first to seven ends after goal presentation")
 	main._start_match()
 	check(main.state == "countdown" and main.scores == [0, 0] and main.arena.puck.modulate.a == 1, "rematch restores puck")

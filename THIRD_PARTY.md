@@ -1,6 +1,6 @@
 # Licenses and pinned sources
 
-Glide artwork (`icon.svg`, procedural table shader and body drawings) and
+Glide artwork (`icon.svg`, adaptive icons, boot-splash SVG/PNG, procedural table shader and body drawings) and
 `impact.wav` (a synthesized PCM hit) were created for this project. No reference
 screenshot artwork is included. The default font is the Godot-bundled Noto Sans
 (SIL Open Font License). Godot 4.5.1 is MIT licensed.

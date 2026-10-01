@@ -97,6 +97,8 @@ class Device:
 
 
 def main(args):
+    if not args.serial.startswith("emulator-"):
+        raise ValueError("This harness clears app data and disables networking; use a disposable Android emulator.")
     device = Device(args.serial, args.port)
     manifest = json.loads(args.manifest.read_text())
     device.launch()
@@ -118,11 +120,12 @@ def main(args):
         contact = device.wait(lambda s: s["contacts"][1] > 0, timeout=60)
         state = device.wait(lambda s: s["state"] == "rally")
         before = state["paddle"]
-        x = state["origin"][0] + before[0] * state["scale"]
-        y = state["origin"][1] + before[1] * state["scale"]
+        stretch_x, stretch_y = state["stretch"]
+        x = state["origin"][0] + before[0] * stretch_x
+        y = state["origin"][1] + before[1] * stretch_y
         sx = device.width / state["viewport"][0]
         sy = device.height / state["viewport"][1]
-        device.adb("shell", "input", "swipe", str(round(x * sx)), str(round(y * sy)), str(round((x + 130 * state["scale"]) * sx)), str(round((y - 70 * state["scale"]) * sy)), "800")
+        device.adb("shell", "input", "swipe", str(round(x * sx)), str(round(y * sy)), str(round((x + 130 * stretch_x) * sx)), str(round((y - 70 * stretch_y) * sy)), "800")
         moved = device.wait(lambda s: abs(s["paddle"][0] - before[0]) > 30 and s["touch_id"] == -1)
         device.tap("Pause")
         paused = device.wait(lambda s: s["state"] == "paused")
@@ -141,14 +144,16 @@ def main(args):
             previous_scores = state["scores"]
             device.command(type="goal", side=scoring_side, angled=True)
             goal = device.wait(lambda s: s["state"] == "goal" and s["scores"][scoring_side] == previous_scores[scoring_side] + 1)
-            hidden = device.wait(lambda s: s["state"] == "goal" and s["puck_alpha"] == 0)
-            assert hidden["puck"] == goal["puck"] and hidden["puck_visual_offset"][1] == (-28 if scoring_side == 0 else 28), {"goal": goal, "hidden": hidden}
-            assert hidden["puck"][1] < -18 if scoring_side == 0 else hidden["puck"][1] > 1018
-            goal_pockets.append({"side": scoring_side, "frozen_body": hidden["puck"], "visual_offset": hidden["puck_visual_offset"], "alpha": hidden["puck_alpha"]})
+            hidden = device.wait(lambda s: s["last_goal"].get("scores") == goal["scores"] and s["last_goal"].get("alpha") == 0)["last_goal"]
+            assert hidden["hidden_puck"] == hidden["puck"] == goal["puck"] and hidden["visual_offset"][1] == (-28 if scoring_side == 0 else 28), {"goal": goal, "hidden": hidden}
+            assert hidden["hidden_puck"][1] < -18 if scoring_side == 0 else hidden["hidden_puck"][1] > 1018
+            goal_pockets.append({"side": scoring_side, "frozen_body": hidden["hidden_puck"], "visual_offset": hidden["visual_offset"], "alpha": hidden["alpha"]})
             if index == 0:
                 device.screenshot(f"{args.serial}-goal-pocket-{scoring_side}")
-            served = device.wait(lambda s: s["state"] == "countdown")
+            served = device.wait(lambda s: s["state"] in ["countdown", "rally"])
             assert served["puck_alpha"] == 1 and served["puck_visual_offset"] == [0, 0]
+            if served["state"] == "countdown":
+                assert served["puck"] == [300, 500] and not served["paddle_frozen"] and not served["bot_frozen"]
             state = device.wait(lambda s: s["state"] == "rally")
         while max(state["scores"]) < 7:
             previous_scores = state["scores"]

@@ -1,8 +1,16 @@
 # Glide — air hockey
 
 A portrait Godot air-hockey game for the web and native Android. First to seven,
-drag or keyboard input, pause/rematch, three table finishes, independent puck
+finger-follow touch or keyboard input, pause/rematch, three table finishes, independent puck
 and paddle colors, local settings, offline assets, and small local PPO actors.
+
+Version 0.1.1 fills portrait displays with the table and places scores on the
+board. Paddles remain controllable while the centered puck waits for a serve:
+0.7 seconds on a new match, then a 0.55-second goal fade and 0.45-second re-serve.
+Opening serves choose either player randomly; later serves go to the player
+who conceded. Customization shows live previews and color/finish swatches.
+Sound starts off and can be enabled in Settings or Pause. Existing installs
+are muted once when upgrading; subsequent explicit choices are remembered.
 
 Implementation/evidence: [validation/STATUS.md](validation/STATUS.md). Model
 labels are not skill certificates: measured quality gates are recorded there.
@@ -26,6 +34,10 @@ official engine and put `godot` on PATH. Python runs only in `training/.venv`:
 uv sync --project training --frozen
 tools/godot --headless --path . --script checks/physics_check.gd
 tools/godot --headless --path . --script checks/goal_flow_check.gd
+tools/godot --headless --path . --script checks/touch_serve_check.gd
+tools/godot --headless --path . --script checks/layout_check.gd
+tools/godot --headless --path . --script checks/cosmetics_settings_check.gd
+tools/godot --headless --path . --script checks/launch_check.gd
 tools/godot --headless --path . --script checks/observation_check.gd
 uv run --project training python training/check.py
 ```
@@ -158,7 +170,11 @@ and metric definitions are recorded in [the validation report](validation/STATUS
 contains bodies, controls, drawing, state history and tiny actor inference.
 `resources/physics.tres` holds frozen physical constants. Gameplay renders an
 unscaled isolated `World2D` through a viewport texture; resizing the display
-never rescales the physics. `models/` holds deployment assets. `training/`
+never rescales the physics. Portrait presentation stretches the texture to
+fit the screen with the same invertible mapping for touch; body artwork and
+its collider projection stay aligned. Wide windows preserve the table aspect.
+The unchanged logical dimensions, body motors and trained weights require no
+retraining for this display change. `models/` holds deployment assets. `training/`
 contains the headless bridge and Python tools; `checks/` holds runnable
 regressions. Production export presets exclude training and checks.
 
@@ -166,5 +182,9 @@ All cosmetics affect drawing only. A damaged settings file recovers to defaults;
 unavailable browser storage leaves the game playable for the current session.
 The game pauses on background/focus loss and requires explicit resume. Extra
 touch IDs are ignored; release/cancel/pause clears the shared motor command.
+
+The original Glide boot artwork replaces the engine splash. A silent,
+nonblocking half-second intro fades into the ready menu; Reduced effects skips
+it. To regenerate its PNG from the SVG, run the launch check with `-- --regenerate`.
 
 Original assets and upstream adaptations are documented in [THIRD_PARTY.md](THIRD_PARTY.md).
