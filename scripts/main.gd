@@ -244,15 +244,18 @@ func _layout() -> void:
 	brand_label.size = Vector2(110, 36)
 	level_label.position = Vector2(114, 4)
 	level_label.size = Vector2(maxf(1, header.size.x - 114), 30)
-	human_caption.position = Vector2(0, 46)
-	bot_caption.position = Vector2(112, 46)
+	var score_width := minf(176, header.size.x - 188)
+	var score_left := (header.size.x - score_width) / 2
+	var cell_width := (score_width - 40) / 2
+	human_caption.position = Vector2(score_left, 46)
+	bot_caption.position = Vector2(score_left + cell_width + 40, 46)
 	for label in [human_caption, bot_caption]:
-		label.size = Vector2(64, 24)
-	human_score_label.position = Vector2(0, 66)
-	score_label.position = Vector2(112, 66)
+		label.size = Vector2(cell_width, 24)
+	human_score_label.position = Vector2(score_left, 66)
+	score_label.position = Vector2(score_left + cell_width + 40, 66)
 	for label in [score_label, human_score_label]:
-		label.size = Vector2(64, 58)
-	score_separator.position = Vector2(68, 72)
+		label.size = Vector2(cell_width, 58)
+	score_separator.position = Vector2(score_left + cell_width, 72)
 	score_separator.size = Vector2(40, 48)
 	state_label.position = Vector2(0, 126)
 	state_label.size = Vector2(header.size.x, 24)

@@ -29,6 +29,9 @@ func _run() -> void:
 		for widget in [main.score_label, main.human_score_label, main.pause_button, main.level_label, main.state_label]:
 			check(header_rect.encloses(widget.get_global_rect()), "Header control clipped: " + str(widget))
 		check(not main.pause_button.get_global_rect().intersects(table_rect), "Pause must not obstruct play")
+		check(is_equal_approx(main.score_separator.get_global_rect().get_center().x, table_rect.get_center().x), "Scoreboard must be centered over the court")
+		check(is_equal_approx((main.human_score_label.get_global_rect().position.x + main.score_label.get_global_rect().end.x) / 2, table_rect.get_center().x), "Score numbers must balance around the court center")
+		check(not main.score_label.get_global_rect().intersects(main.pause_button.get_global_rect()), "Centered scoreboard must leave room for Pause")
 		check(main.pause_button.size.x >= 82 and main.pause_button.size.y >= 82 and main.pause_button.icon != null and main.pause_button.tooltip_text == "Pause", "Pause icon must keep its touch target and accessible label")
 		for point in [Vector2.ZERO, Vector2(600, 0), Vector2(0, 1000), Vector2(600, 1000), Vector2(300, 750)]:
 			check(main.screen_to_table(main.table_to_screen(point)).distance_to(point) < 0.001, "Touch transform mismatch")

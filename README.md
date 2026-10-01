@@ -4,7 +4,9 @@ A portrait Godot air-hockey game for the web and native Android. First to seven,
 finger-follow touch or keyboard input, pause/rematch, three table finishes, independent puck
 and paddle colors, local settings, offline assets, and small local PPO actors.
 
-Version 0.1.2 puts scores, difficulty and a pause icon in a safe-area header
+Version 0.1.3 centers the scoreboard over the court and fills the launcher icon
+with blue artwork, removing its dark padding. Scores, difficulty and a pause
+icon sit in a safe-area header
 above the proportional court. A finish-colored background fills the screen
 and Android's recent-app preview. Menus have larger switches and touch targets,
 clear primary actions and compact appearance rows. Finger tracking uses a

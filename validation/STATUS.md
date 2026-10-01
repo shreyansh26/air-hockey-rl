@@ -7,6 +7,17 @@ Gameplay loads one of four trained actors and fails visibly if it is missing
 or incompatible. Training, QA, critics, optimizers, and ONNX companions are
 excluded from production exports.
 
+**0.1.3 layout/icon follow-up:** the scoreboard is centered over the court,
+with Pause kept clear on narrow screens. Legacy and adaptive launcher icons
+have full blue backgrounds. Six-size layout checks and launch/icon checks pass;
+all 12 packaged launcher/background PNGs have opaque blue corners. Production
+0.1.3/code 4 is installed on the OnePlus with unchanged settings and its
+installed APK SHA verified. The centered scoreboard and updated launcher icon
+were both verified on the phone, including the same app-drawer search view.
+See [the follow-up evidence](scoreboard-icon-0.1.3.json) and
+[scoreboard screenshot](screenshots/scoreboard-centered-0.1.3.png) /
+[launcher screenshot](screenshots/launcher-phone-0.1.3.png).
+
 **0.1.2 UI and input:** the proportional court now sits below a safe-area
 score/difficulty/pause header. Larger switches, touch targets, compact appearance
 rows and a full-screen background improve menus and the recent-app card.

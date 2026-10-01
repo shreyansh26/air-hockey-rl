@@ -13,9 +13,9 @@
       "excluded_training_checks_onnx": true
     },
     "index.pck": {
-      "bytes": 245724,
-      "gzip_bytes": 205362,
-      "sha256": "d14a52574e41190bb6062ce0932d717267425cd9a72f2470515b558abf3f7711"
+      "bytes": 245420,
+      "gzip_bytes": 204998,
+      "sha256": "7c41bf69e1c87ad81ca208682bdcf5a6f0407ec14c417f4958eb8b70fdf0df6e"
     },
     "index.wasm": {
       "bytes": 38034280,
@@ -37,8 +37,8 @@
       },
       "runtime_policy_bytes": 139714,
       "excluded_training_checks_onnx": true,
-      "bytes": 80116278,
-      "sha256": "8573a280ced39301cc6049289adc3b931e32817f2f49adb3c343d71968ad80a1",
+      "bytes": 80119882,
+      "sha256": "4425400b12e381f5faeedd1bc3892c24bf4e3e417343c9d4c80f637223fc09b2",
       "signing": "debug key"
     },
     "aab": {
@@ -51,8 +51,8 @@
       },
       "runtime_policy_bytes": 139714,
       "excluded_training_checks_onnx": true,
-      "bytes": 27707003,
-      "sha256": "607adfeb73e228ec6620c5bf1c1769d7e9f787c2cd36ce82f248f97dfce686c4",
+      "bytes": 27710460,
+      "sha256": "88196a193be59611edcac3f2abde9b234d142d64d6cbb44b28aaa0014a24525c",
       "signing": "debug key"
     }
   },

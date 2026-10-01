@@ -19,14 +19,17 @@ func _initialize() -> void:
 	assert(config.load("res://export_presets.cfg") == OK)
 	for preset in [1, 4, 5]:
 		var section := "preset.%s.options" % preset
-		assert(config.get_value(section, "version/code") == 3)
-		assert(config.get_value(section, "version/name") == "0.1.2")
+		assert(config.get_value(section, "version/code") == 4)
+		assert(config.get_value(section, "version/name") == "0.1.3")
 		assert(config.get_value(section, "screen/immersive_mode"))
 		assert(config.get_value(section, "screen/edge_to_edge"))
 		for key in ["launcher_icons/main_192x192", "launcher_icons/adaptive_foreground_432x432", "launcher_icons/adaptive_background_432x432"]:
 			var icon := Image.new()
 			assert(icon.load_svg_from_string(FileAccess.get_file_as_string(config.get_value(section, key))) == OK)
 			assert(not icon.is_empty())
+			if key != "launcher_icons/adaptive_foreground_432x432":
+				for point in [Vector2i.ZERO, Vector2i(icon.get_width() - 1, icon.get_height() - 1), Vector2i(icon.get_width() / 2, 0)]:
+					assert(icon.get_pixelv(point).is_equal_approx(Color("166083")), "Launcher icon background must fill the canvas without dark padding.")
 	var parent := Control.new()
 	root.add_child(parent)
 	var child_count := parent.get_child_count()
