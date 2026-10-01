@@ -28,7 +28,7 @@ def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
     env = make_env(arenas=args.arenas, processes=args.processes, seed=seed,
                    delay=bundle["levels"][bottom]["delay_ticks"], log_dir=ROOT / "training/runs/evaluation")
     learner = PPO.load(bundle["levels"][bottom]["checkpoint"], device="cpu")
-    scripted = top in ["intercept", "delayed_chase", "center", "chase"]
+    scripted = top in ["intercept", "delayed_chase", "puck_chase", "center", "chase"]
     opponents = [] if scripted else [str(ROOT / f"models/{top}/actor.json")]
     env.env_method("configure", mode="rally", hit_reward=0, shaping=0, limit_ticks=36000,
                    opponent_mode="fixed", opponent_style=top if scripted else "intercept", opponent_delay=args.opponent_delay,
@@ -37,8 +37,9 @@ def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
     durations = np.zeros(env.num_envs, int)
     wins, losses, censored, stalls, points, hits = 0, 0, 0, 0, 0, 0
     score_differences, lengths, replays = [], [], []
-    active = np.arange(env.num_envs) < min(env.num_envs, count)
-    assigned = int(active.sum())
+    quotas = np.full(env.num_envs, count // env.num_envs) + (np.arange(env.num_envs) < count % env.num_envs)
+    completed = np.zeros(env.num_envs, int)
+    active = quotas > 0
     started = time.perf_counter()
     try:
         obs = env.reset()
@@ -71,19 +72,19 @@ def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
                     lengths.append(int(durations[i]))
                     scores[i] = 0
                     durations[i] = 0
-                    if assigned < count:
-                        assigned += 1
-                        if timed_out and not finished:
-                            restart.append(i)
-                    else:
+                    completed[i] += 1
+                    if completed[i] >= quotas[i]:
                         active[i] = False
+                    elif timed_out and not finished:
+                        restart.append(i)
             for index, observation in env.venv.restart_matches(restart).items():
                 obs[index] = observation
         return {"bottom": bottom, "top": top, "seed": seed, "requested_matches": count, "wins": wins, "losses": losses,
                 "censored": censored, "win_rate": wins / max(1, wins + losses), "wilson_95": wilson(wins, wins + losses),
                 "mean_score_difference": float(np.mean(score_differences)) if score_differences else None,
                 "mean_match_seconds": float(np.mean(lengths)) / 30, "stalls": stalls, "points": points, "paddle_hits": hits,
-                "learner_side": learner_side, "opponent_delay_ticks": args.opponent_delay if top == "delayed_chase" else 0,
+                "learner_side": learner_side, "opponent_delay_ticks": args.opponent_delay if top in ["delayed_chase", "puck_chase"] else 0,
+                "opponent_observation_scope": "puck_only" if top == "puck_chase" else "whole_world" if top == "delayed_chase" else "instantaneous",
                 "wall_seconds": time.perf_counter() - started, "replay": replays}
     finally:
         env.close()
@@ -133,8 +134,11 @@ if __name__ == "__main__":
     parser.add_argument("--arenas", type=int, default=16)
     parser.add_argument("--processes", type=int, default=1)
     parser.add_argument("--max-decisions", type=int, default=9000)
-    parser.add_argument("--baselines", nargs="+", choices=["intercept", "delayed_chase", "chase", "center"], default=["intercept"])
+    parser.add_argument("--baselines", nargs="+", choices=["intercept", "delayed_chase", "puck_chase", "chase", "center"], default=["intercept"])
     parser.add_argument("--opponent-delay", type=int, default=22)
     parser.add_argument("--baseline-only", action="store_true")
     parser.add_argument("--output", default=str(ROOT / "validation/difficulty.json"))
-    main(parser.parse_args())
+    args = parser.parse_args()
+    if args.matches < 2 or args.matches % 2:
+        parser.error("matches must be positive and even for balanced sides")
+    main(args)

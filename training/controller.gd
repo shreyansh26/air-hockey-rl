@@ -68,7 +68,7 @@ func reset_episode() -> void:
 		else:
 			serve = next_serve
 	arena.reset_rally(serve)
-	opponent_style = ["center", "chase", "intercept", "delayed_chase"][rng.randi_range(0, 3)]
+	opponent_style = ["center", "chase", "intercept", "delayed_chase", "puck_chase"][rng.randi_range(0, 4)]
 	if opponent_mode == "fixed":
 		opponent_style = fixed_style
 	opponent = null
@@ -124,10 +124,14 @@ func set_action(action: Vector2) -> void:
 		var opponent_action: Vector2 = opponent.predict(opponent_history.encode(opponent.delay_ticks))
 		opponent_history.previous_action = opponent_action
 		arena.paddles[1 - learner_side].set_command(-opponent_action if learner_side == 0 else opponent_action)
-	elif opponent_style == "delayed_chase":
+	elif opponent_style in ["delayed_chase", "puck_chase"]:
 		var delayed := opponent_history.encode(opponent_delay)
 		var observed_puck := Vector2((delayed[36] + 1) * 300, (delayed[37] + 1) * 500)
 		var observed_paddle := Vector2((delayed[40] + 1) * 300, (delayed[41] + 1) * 500)
+		if opponent_style == "puck_chase":
+			observed_paddle = arena.paddles[1 - learner_side].position
+			if learner_side == 0:
+				observed_paddle = Vector2(600, 1000) - observed_paddle
 		var target := observed_puck + Vector2(0, 30) if observed_puck.y > 500 else Vector2(300, 840)
 		target = arena.clamp_target(target, 0)
 		var command := (target - observed_paddle) * 8 / 1050
