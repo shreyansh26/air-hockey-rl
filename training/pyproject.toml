@@ -1,0 +1,17 @@
+[project]
+name = "glide-training"
+version = "0.1.0"
+requires-python = "==3.11.*"
+dependencies = [
+  "stable-baselines3==2.4.0",
+  "torch==2.8.0",
+  "gymnasium==1.0.0",
+  "numpy==1.26.4",
+  "godot-rl @ git+https://github.com/edbeeching/godot_rl_agents@207b6f476f5846f33d08b92c7a350147e7b78bf5",
+  "onnx==1.19.0",
+  "onnxruntime==1.22.1",
+  "tensorboard==2.20.0",
+]
+
+[tool.uv]
+package = false

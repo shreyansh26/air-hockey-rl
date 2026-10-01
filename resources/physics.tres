@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/physics_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+width = 600.0
+height = 1000.0
+puck_radius = 18.0
+paddle_radius = 44.0
+paddle_speed = 1050.0
+paddle_acceleration = 10000.0
+puck_speed = 2300.0
+puck_damping = 0.08
+paddle_mass = 5.0
+goal_width = 220.0
+stall_seconds = 5.0
+action_ticks = 4
