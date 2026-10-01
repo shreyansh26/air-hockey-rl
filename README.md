@@ -146,6 +146,12 @@ it does not wait for completion. Verify `soak_complete` and at least 1200 active
 seconds in the final report. WebQA provides the same `physics`, `parity`, and
 `soak` commands through its visible QA input. Production builds exclude QA.
 
+WebQA also accepts `{"type":"telemetry","enabled":false}` to stop periodic
+publishing, `{"type":"snapshot"}` for one sample, and
+`{"type":"silence","seconds":45}` to pause all QA processing temporarily.
+These diagnostic controls leave the game running. Memory/performance limits
+and metric definitions are recorded in [the validation report](validation/STATUS.md).
+
 ## Layout
 
 `scenes/` contains the main, independent arena and shared paddle. `scripts/`

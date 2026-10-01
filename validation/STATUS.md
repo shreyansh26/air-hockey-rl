@@ -47,3 +47,29 @@ The web memory failure remains unresolved. Cached DOM bindings and Reduced
 effects did not remove the counter growth; those unproven changes were not
 promoted. The original implementation task owns the remaining performance
 investigation. This does not qualify production memory as stable.
+
+Additional bot checks passed with a 120 Hz human-style controller while Insane
+retains 30 Hz decisions and its 83 ms observation delay: 383/400 wins against
+instantaneous interception, 399/400 against guarded chasing, and 400/400
+against literal puck-following at both zero and 250 ms sensor delay. Each
+cohort is balanced across sides and completes without artificial rally resets.
+See [the controller comparison](../docs/bot-quality.md) for exact target rules.
+
+The follow-up [idle memory diagnostic](web-idle-memory-diagnostic.json) also
+observes growth with no loaded actor or gameplay, stable object/resource
+counts, and telemetry publishing disabled. Its final interval pauses QA
+processing for 45 seconds within a 95.7-second observation; it does not isolate
+the remaining render/engine/command-poll allocations. The cause remains open.
+
+New telemetry names `engine_frame_ms` and `physics_frame_ms` describe elapsed
+engine frames. The historical `process_cpu_ms`/`physics_cpu_ms` names did not
+establish exclusive CPU costs. Godot's debug `MEMORY_STATIC` tracks current
+engine allocations; it does not measure browser JavaScript/GPU memory or the
+WebAssembly heap's capacity. See [Godot 4.5 monitors](https://docs.godotengine.org/en/4.5/classes/class_performance.html)
+and [the pinned allocation tracker](https://github.com/godotengine/godot/blob/4.5.1-stable/core/os/memory.cpp).
+
+Soak duration counts active rally, countdown and goal presentation, excluding
+paused time. Actual puck-integration durations are recorded separately:
+988.5 seconds on API 35, 1000.8 on API 36 and 1034.5 on web. After the first
+180 wall seconds, native static-memory ranges were 37,156 and 28,826 bytes;
+the web counter rose by 43,046,876 bytes in its recorded 20-minute run.

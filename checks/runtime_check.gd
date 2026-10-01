@@ -21,6 +21,8 @@ var frame_bins := PackedInt32Array()
 var frame_count := 0
 var last_memory := 0
 var js_callbacks := []
+var telemetry_enabled := true
+var silence_until := 0
 var boot_id := str(Time.get_unix_time_from_system())
 
 func initialize(value: Control) -> void:
@@ -46,6 +48,8 @@ func _physics_process(_delta: float) -> void:
 		previous_tick = tick
 
 func _process(delta: float) -> void:
+	if Time.get_ticks_msec() < silence_until:
+		return
 	if soak_started > 0:
 		if main.state in ["rally", "countdown", "goal"]:
 			soak_active_seconds += delta
@@ -79,6 +83,8 @@ func _process(delta: float) -> void:
 		var command = JSON.parse_string(command_text)
 		if command is Dictionary:
 			_command(command)
+	if not telemetry_enabled and not command_text:
+		return
 	var json := JSON.stringify(snapshot())
 	if browser:
 		JavaScriptBridge.eval("document.getElementById('qa-state').textContent=" + JSON.stringify(json))
@@ -91,6 +97,13 @@ func _process(delta: float) -> void:
 
 func _command(command: Dictionary) -> void:
 	match command.get("type", ""):
+		"snapshot":
+			pass
+		"silence":
+			silence_until = Time.get_ticks_msec() + clampi(int(command.get("seconds", 45)), 1, 60) * 1000
+			telemetry_enabled = false
+		"telemetry":
+			telemetry_enabled = bool(command.get("enabled", true))
 		"shot":
 			if main.state != "rally":
 				return
@@ -169,8 +182,11 @@ func snapshot() -> Dictionary:
 	var widgets := []
 	_collect_widgets(main, widgets)
 	return {"state": main.state, "scores": main.scores, "level": main.level, "settings": main.settings,
-		"physics_cpu_ms": Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000,
-		"process_cpu_ms": Performance.get_monitor(Performance.TIME_PROCESS) * 1000,
+		"physics_frame_ms": Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000,
+		"engine_frame_ms": Performance.get_monitor(Performance.TIME_PROCESS) * 1000,
+		"debug_build": OS.has_feature("debug"), "telemetry_enabled": telemetry_enabled,
+		"silence_until": silence_until,
+		"objects": Performance.get_monitor(Performance.OBJECT_COUNT), "resources": Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT), "orphan_nodes": Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT),
 		"boot_id": boot_id, "static_memory_bytes": Performance.get_monitor(Performance.MEMORY_STATIC), "texture_memory_bytes": Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED),
 		"panel": main.panel_mode, "widgets": widgets,
 		"paddle": [main.arena.paddles[0].position.x, main.arena.paddles[0].position.y],
