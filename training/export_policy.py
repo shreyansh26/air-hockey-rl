@@ -7,7 +7,7 @@ import numpy as np
 from stable_baselines3 import PPO
 import torch
 
-from common import ROOT, physics_hash, write_schema
+from common import ROOT, checkpoint_physics, write_schema
 
 
 class Actor(torch.nn.Module):
@@ -20,11 +20,10 @@ class Actor(torch.nn.Module):
         return torch.clamp(self.head(self.net(obs)), -1, 1)
 
 
-def export(checkpoint, output, level="insane", delay=10):
+def export(checkpoint, output, level="insane", delay=10, physics_validation=None):
     checkpoint, output = Path(checkpoint), Path(output)
-    recorded = checkpoint.parent / "config.json"
-    if not recorded.exists() or json.loads(recorded.read_text()).get("physics_hash") != physics_hash():
-        raise ValueError("Export requires a checkpoint with matching recorded physics")
+    checkpoint_path = checkpoint if checkpoint.suffix == ".zip" else checkpoint.with_suffix(".zip")
+    provenance = checkpoint_physics(checkpoint_path, physics_validation)
     model = PPO.load(checkpoint, device="cpu")
     schema_path = write_schema()
     schema = json.loads(schema_path.read_text())
@@ -37,15 +36,14 @@ def export(checkpoint, output, level="insane", delay=10):
     assert weights.size == 7682 and np.isfinite(weights).all()
     binary = weights.tobytes()
     (output / "actor.bin").write_bytes(binary)
-    checkpoint_path = checkpoint if checkpoint.suffix == ".zip" else checkpoint.with_suffix(".zip")
     metadata = {"schema_version": 1, "dims": [52, 64, 64, 2], "activations": ["tanh", "tanh", "clip"],
                 "matrix_order": "row-major", "dtype": "little-endian-float32", "parameters": 7682,
                 "physics_hash": schema["physics_hash"], "schema_hash": sha256(schema_path.read_bytes()).hexdigest(),
+                "training_physics_hash": provenance["physics_hash"], "physics_validation": physics_validation,
                 "physics_hz": 120, "action_ticks": 4, "weights_sha256": sha256(binary).hexdigest(),
                 "checkpoint_sha256": sha256(checkpoint_path.read_bytes()).hexdigest(), "trained_transitions": model.num_timesteps,
                 "difficulty": level, "delay_ticks": delay, "normalization": schema["normalization"],
                 "quality": "candidate; see validation/difficulty.json"}
-    provenance = json.loads(recorded.read_text())
     metadata["training_provenance"] = {key: provenance.get(key) for key in ["seed", "ppo", "curriculum", "warm_start", "resume"]}
     (output / "actor.json").write_text(json.dumps(metadata, indent=2) + "\n")
     torch.onnx.export(actor, torch.zeros(1, 52), output / "actor.onnx", input_names=["observation"],
@@ -61,5 +59,6 @@ if __name__ == "__main__":
     parser.add_argument("--output", required=True)
     parser.add_argument("--level", default="insane")
     parser.add_argument("--delay", type=int, default=10)
+    parser.add_argument("--physics-validation", help="Passed tournament for this exact checkpoint after a rule-only correction")
     args = parser.parse_args()
-    print(json.dumps(export(args.checkpoint, args.output, args.level, args.delay), indent=2))
+    print(json.dumps(export(args.checkpoint, args.output, args.level, args.delay, args.physics_validation), indent=2))

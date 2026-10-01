@@ -39,7 +39,7 @@ func run() -> Dictionary:
 	check(arena.crossed_goal(Vector2(300, 0), Vector2(300, -40)) == 0, "fast top goal")
 	check(arena.crossed_goal(Vector2(300, 1000), Vector2(300, 1040)) == 1, "fast bottom goal")
 	check(arena.crossed_goal(Vector2(190, 0), Vector2(190, -40)) == -1, "post crossing")
-	check(arena.crossed_goal(Vector2(250, 0), Vector2(550, -40)) == -1, "swept aperture")
+	check(arena.crossed_goal(Vector2(250, 0), Vector2(650, -40)) == -1, "swept aperture")
 	await shot(Vector2(300, 500), Vector2.ZERO)
 	await ticks(24)
 	check(arena.puck.position.distance_to(Vector2(300, 500)) < 0.1, "zero action displacement")
@@ -54,9 +54,20 @@ func run() -> Dictionary:
 	check(goals == 1 and not arena.running, "legal physical goal")
 	await ticks(10)
 	check(goals == 1, "duplicate score prevention")
+	# This clears the right post, then drifts outside the old +/-74 scoring strip.
+	for side in range(2):
+		for direction in [-1, 1]:
+			var before := goals
+			await shot(Vector2(300 + direction * 65, 30 if side == 0 else 970), Vector2(direction * 800, -2200 if side == 0 else 2200))
+			await ticks(30)
+			check(goals == before + 1 and not arena.running and arena.last_stall_reason.is_empty(), "angled goal must not escape %d/%d: %s" % [side, direction, arena.puck.position])
 	await shot(Vector2(178, 65), Vector2(50, -2300))
 	await ticks(15)
-	check(goals == 1 and arena.puck.position.y > 0, "post graze must rebound")
+	check(goals == 5 and arena.puck.position.y > 0, "post graze must rebound")
+	var before_recovery := goals
+	await shot(Vector2(650, 500), Vector2(2300, 0))
+	await ticks(8)
+	check(not arena.running and arena.last_stall_reason == "out_of_bounds" and goals == before_recovery, "escaped rail re-serves without a point")
 	await shot(Vector2(40, 40), Vector2(-1600, -1600))
 	await ticks(25)
 	check(arena.puck.position.x > 18 and arena.puck.position.y > 18, "corner recovery")
@@ -89,6 +100,7 @@ func run() -> Dictionary:
 			# Godot contacts can penetrate by <2 units for one tick; outer rail is 40 thick.
 			check(point.x >= -2 and point.x <= 602, "rail tunneling %d: %s" % [i, point])
 			if not arena.running:
+				check(arena.last_stall_reason != "out_of_bounds", "unscored random escape %d" % i)
 				break
 	arena.reset_rally()
 	check(arena.contacts == [0, 0] and arena.ticks == 0 and arena.quiet_ticks == 0, "reset bookkeeping")

@@ -13,26 +13,25 @@
     {
       "arenas": 16,
       "transitions": 2048,
-      "seconds": 0.7545028339955024,
-      "transitions_per_second": 2714.370188849692,
-      "simulation_seconds_per_wall_second_per_arena": 5.654937893436859
+      "seconds": 1.2492018330085557,
+      "transitions_per_second": 1639.4468418827348,
+      "simulation_seconds_per_wall_second_per_arena": 3.415514253922364
     },
     {
       "arenas": 32,
       "transitions": 4096,
-      "seconds": 1.9638452079962008,
-      "transitions_per_second": 2085.7040989393113,
-      "simulation_seconds_per_wall_second_per_arena": 2.172608436395116
+      "seconds": 1.9517812079866417,
+      "transitions_per_second": 2098.595879107385,
+      "simulation_seconds_per_wall_second_per_arena": 2.186037374070193
     },
     {
       "arenas": 64,
       "transitions": 8192,
-      "seconds": 3.989609374984866,
-      "transitions_per_second": 2053.333855530925,
-      "simulation_seconds_per_wall_second_per_arena": 1.0694447164223568
+      "seconds": 9.947710166015895,
+      "transitions_per_second": 823.5060997239462,
+      "simulation_seconds_per_wall_second_per_arena": 0.42890942693955536
     }
   ],
   "device": "cpu",
-  "torch_threads": 1,
-  "timing_context": "Concurrent Android emulators and web gameplay; use local-throughput.json for the earlier isolated batching comparison"
+  "torch_threads": 1
 }

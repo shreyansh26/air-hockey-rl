@@ -14,6 +14,23 @@ def physics_hash():
     return sha256((data + physics_settings).encode()).hexdigest()
 
 
+def checkpoint_physics(checkpoint, validation=None):
+    """Keep original training provenance; rule-only compatibility needs a passed tournament."""
+    checkpoint = Path(checkpoint)
+    if not checkpoint.exists():
+        checkpoint = checkpoint.with_suffix(".zip")
+    recorded = json.loads((checkpoint.parent / "config.json").read_text())
+    if recorded.get("physics_hash") != physics_hash():
+        report = json.loads(Path(validation).read_text()) if validation else {}
+        digest = sha256(checkpoint.read_bytes()).hexdigest()
+        matched = any(value == digest and report.get("training_physics_hashes", {}).get(level) == recorded.get("physics_hash")
+                      for level, value in report.get("checkpoint_hashes", {}).items())
+        gates = report.get("gates", {})
+        if report.get("physics_hash") != physics_hash() or not report.get("qualified") or not gates or not all(gate.get("passed") for gate in gates.values()) or not matched:
+            raise ValueError("Checkpoint physics changed; retrain or supply its passed --physics-validation tournament")
+    return recorded
+
+
 def write_schema():
     schema = {"schema_version": 1, "engine": "4.5.1.stable", "physics_backend": "GodotPhysics2D",
               "physics_hash": physics_hash(), "physics_hz": 120, "action_ticks": 4,

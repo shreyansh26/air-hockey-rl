@@ -1,0 +1,258 @@
+[
+  {
+    "state": "rally",
+    "scores": [
+      0,
+      0
+    ],
+    "puck": [
+      365.0,
+      30.0
+    ],
+    "puck_alpha": 1.0,
+    "puck_visual_offset": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "state": "rally",
+    "scores": [
+      0,
+      0
+    ],
+    "puck": [
+      365.0,
+      30.0
+    ],
+    "puck_alpha": 1.0,
+    "puck_visual_offset": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "state": "goal",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      375.905914306641,
+      -25.6023139953613
+    ],
+    "puck_alpha": 0.241586282849312,
+    "puck_visual_offset": [
+      0.0,
+      -20.8333339691162
+    ]
+  },
+  {
+    "state": "goal",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      375.905914306641,
+      -25.6023139953613
+    ],
+    "puck_alpha": 0.241586282849312,
+    "puck_visual_offset": [
+      0.0,
+      -20.8333339691162
+    ]
+  },
+  {
+    "state": "goal",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      375.905914306641,
+      -25.6023139953613
+    ],
+    "puck_alpha": 0.241586282849312,
+    "puck_visual_offset": [
+      0.0,
+      -20.8333339691162
+    ]
+  },
+  {
+    "state": "goal",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      375.905914306641,
+      -25.6023139953613
+    ],
+    "puck_alpha": 0.0,
+    "puck_visual_offset": [
+      0.0,
+      -28.0
+    ]
+  },
+  {
+    "state": "goal",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      375.905914306641,
+      -25.6023139953613
+    ],
+    "puck_alpha": 0.0,
+    "puck_visual_offset": [
+      0.0,
+      -28.0
+    ]
+  },
+  {
+    "state": "goal",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      375.905914306641,
+      -25.6023139953613
+    ],
+    "puck_alpha": 0.0,
+    "puck_visual_offset": [
+      0.0,
+      -28.0
+    ]
+  },
+  {
+    "state": "goal",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      375.905914306641,
+      -25.6023139953613
+    ],
+    "puck_alpha": 0.0,
+    "puck_visual_offset": [
+      0.0,
+      -28.0
+    ]
+  },
+  {
+    "state": "goal",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      375.905914306641,
+      -25.6023139953613
+    ],
+    "puck_alpha": 0.0,
+    "puck_visual_offset": [
+      0.0,
+      -28.0
+    ]
+  },
+  {
+    "state": "goal",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      375.905914306641,
+      -25.6023139953613
+    ],
+    "puck_alpha": 0.0,
+    "puck_visual_offset": [
+      0.0,
+      -28.0
+    ]
+  },
+  {
+    "state": "countdown",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      300.0,
+      400.0
+    ],
+    "puck_alpha": 1.0,
+    "puck_visual_offset": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "state": "countdown",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      300.0,
+      400.0
+    ],
+    "puck_alpha": 1.0,
+    "puck_visual_offset": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "state": "countdown",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      300.0,
+      400.0
+    ],
+    "puck_alpha": 1.0,
+    "puck_visual_offset": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "state": "countdown",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      300.0,
+      400.0
+    ],
+    "puck_alpha": 1.0,
+    "puck_visual_offset": [
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "state": "countdown",
+    "scores": [
+      1,
+      0
+    ],
+    "puck": [
+      300.0,
+      400.0
+    ],
+    "puck_alpha": 1.0,
+    "puck_visual_offset": [
+      0.0,
+      0.0
+    ]
+  }
+]

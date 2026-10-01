@@ -25,6 +25,7 @@ official engine and put `godot` on PATH. Python runs only in `training/.venv`:
 ```sh
 uv sync --project training --frozen
 tools/godot --headless --path . --script checks/physics_check.gd
+tools/godot --headless --path . --script checks/goal_flow_check.gd
 tools/godot --headless --path . --script checks/observation_check.gd
 uv run --project training python training/check.py
 ```
@@ -40,8 +41,8 @@ optimizer-preserving resume; it also measures batches of 16/32/64 arenas.
 
 ```sh
 uv run --project training python training/bootstrap.py --output training/runs/bootstrap
-uv run --project training python training/train.py --config training/configs/quality.json --warm-start training/checkpoints/bootstrap/final.zip
-uv run --project training python training/train.py --config training/configs/strategic.json --warm-start training/checkpoints/quality/final.zip --seed 43 --delay 10 --output training/runs/strategic-43
+uv run --project training python training/train.py --config training/configs/quality.json --warm-start training/runs/bootstrap/final.zip
+uv run --project training python training/train.py --config training/configs/strategic.json --warm-start training/runs/quality/final.zip --seed 43 --delay 10 --output training/runs/strategic-43
 uv run --project training python training/train.py --config training/configs/smoke.json
 uv run --project training python training/train.py --config training/configs/pilot.json
 uv run --project training python training/train.py --config training/configs/full.json --resume training/runs/pilot/final.zip
@@ -52,6 +53,19 @@ Selected SB3 checkpoints, RNG, and frozen opponents are retained in
 [training/checkpoints/](training/checkpoints/README.md), so a fresh clone can
 evaluate the shipped actors and resume training. The bootstrap teacher is
 confined to training; gameplay always uses the selected neural actor.
+
+The selected checkpoints retain the original training physics hash. Their
+exact weights passed a fresh full tournament after the angled-goal correction.
+Re-export them with the explicit compatibility report:
+
+```sh
+uv run --project training python training/export_policy.py --checkpoint training/checkpoints/insane/final.zip --output models/insane --level insane --delay 10 --physics-validation validation/difficulty.json
+uv run --project training python checks/checkpoint_physics_check.py
+```
+
+Resume instructions in the checkpoint directory use the same report. New
+training runs record the corrected Arena hash. Collision geometry, masses,
+speeds, damping, motor controls and observation encoding did not change.
 
 ```sh
 uv run --project training python training/parity.py
@@ -102,6 +116,8 @@ entry point. Python's server sends `.wasm` as `application/wasm`.
 Production hosting needs HTTPS for PWA storage. Single-threaded WebGL 2 export
 does not require isolation headers. Let the service worker finish caching before
 going offline; browser eviction/private storage can prevent persistent caching.
+After a local rebuild, close the old game tab and reopen it so the waiting
+service-worker version can activate. Keep the full export together.
 Android bundles all assets and needs no network permission.
 
 In Godot Editor Settings set the Android SDK and Java SDK (Android Studio's JBR

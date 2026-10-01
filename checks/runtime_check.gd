@@ -11,6 +11,7 @@ var soak_active_seconds := 0.0
 var soak_complete := false
 var soak_stalls := 0
 var soak_invalid_states := 0
+var soak_out_of_bounds := 0
 var soak_physics_ticks := 0
 var previous_tick := -1
 var physics_report := {}
@@ -30,6 +31,8 @@ func initialize(value: Control) -> void:
 	main.arena.stalled.connect(func():
 		if soak_started > 0:
 			soak_stalls += 1
+			if main.arena.last_stall_reason == "out_of_bounds":
+				soak_out_of_bounds += 1
 			if not main.arena.puck.position.is_finite() or not main.arena.puck.linear_velocity.is_finite():
 				soak_invalid_states += 1)
 	if browser:
@@ -105,7 +108,8 @@ func _command(command: Dictionary) -> void:
 			main.arena.set_running(false)
 			main.arena.paddles[0].reset_at(Vector2(80, 920))
 			main.arena.paddles[1].reset_at(Vector2(80, 80))
-			main.arena.puck.reset_at(Vector2(300, 35 if scoring_side == 0 else 965), Vector2(0, -2300 if scoring_side == 0 else 2300))
+			var angled: bool = command.get("angled", false)
+			main.arena.puck.reset_at(Vector2(365 if angled else 300, 30 if scoring_side == 0 else 970), Vector2(800 if angled else 0, (-1 if scoring_side == 0 else 1) * (2200 if angled else 2300)))
 			main.arena.last_position = main.arena.puck.position
 			main.history.reset(main.arena, 1)
 			main.arena.set_running(true)
@@ -126,6 +130,7 @@ func _command(command: Dictionary) -> void:
 			soak_complete = false
 			soak_stalls = 0
 			soak_invalid_states = 0
+			soak_out_of_bounds = 0
 			soak_physics_ticks = 0
 			previous_tick = -1
 			main._start_match()
@@ -170,6 +175,8 @@ func snapshot() -> Dictionary:
 		"panel": main.panel_mode, "widgets": widgets,
 		"paddle": [main.arena.paddles[0].position.x, main.arena.paddles[0].position.y],
 		"bot": [main.arena.paddles[1].position.x, main.arena.paddles[1].position.y], "contacts": main.arena.contacts,
+		"puck": [main.arena.puck.position.x, main.arena.puck.position.y], "puck_velocity": [main.arena.puck.linear_velocity.x, main.arena.puck.linear_velocity.y],
+		"puck_alpha": main.arena.puck.modulate.a, "puck_visual_offset": [main.arena.puck.visual_offset.x, main.arena.puck.visual_offset.y],
 		"touch_id": main.touch_id, "model_hash": main.actor.manifest.weights_sha256 if main.actor else "prototype",
 		"model_error": main.model_error, "physics": physics_report, "parity": parity_report, "storage_ok": main.storage_ok,
 		"origin": [main.table_origin.x, main.table_origin.y], "scale": main.table_scale,
@@ -177,7 +184,7 @@ func snapshot() -> Dictionary:
 		"frame_ms_p50": percentile(main.frames, 0.5), "frame_ms_p95": percentile(main.frames, 0.95),
 		"frame_ms_p99": percentile(main.frames, 0.99), "soak_seconds": soak_active_seconds,
 		"soak_wall_seconds": (Time.get_ticks_msec() - soak_started) / 1000.0 if soak_started else 0,
-		"soak_complete": soak_complete, "soak_stalls": soak_stalls, "soak_invalid_states": soak_invalid_states,
+		"soak_complete": soak_complete, "soak_stalls": soak_stalls, "soak_invalid_states": soak_invalid_states, "soak_out_of_bounds": soak_out_of_bounds,
 		"simulated_rally_seconds": soak_physics_ticks / 120.0, "soak_matches": soak_matches}
 
 func _collect_widgets(node: Node, widgets: Array) -> void:

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "engine": "4.5.1.stable",
   "physics_backend": "GodotPhysics2D",
-  "physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
+  "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
   "physics_hz": 120,
   "action_ticks": 4,
   "features": 52,

@@ -1,8 +1,8 @@
 {
-  "serial": "emulator-5560",
+  "serial": "emulator-5562",
   "resolution": [
-    1080,
-    2424
+    720,
+    1280
   ],
   "manifest": "/Users/shreyansh/Projects/air-hockey/models/manifest.json",
   "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
@@ -144,40 +144,40 @@
   "parity": {
     "easy": {
       "max_abs_error": 1.01327896118164e-06,
-      "mean_ms": 0.2260534,
+      "mean_ms": 0.2871771,
       "observations": 10000,
-      "p95_ms": 0.457,
+      "p95_ms": 0.464,
       "weights_hash": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2"
     },
     "hard": {
       "max_abs_error": 1.01327896118164e-06,
-      "mean_ms": 0.2137861,
+      "mean_ms": 0.5682492,
       "observations": 10000,
-      "p95_ms": 0.427,
+      "p95_ms": 1.261,
       "weights_hash": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7"
     },
     "insane": {
       "max_abs_error": 8.64267349243164e-07,
-      "mean_ms": 0.2321039,
+      "mean_ms": 0.3430215,
       "observations": 10000,
-      "p95_ms": 0.428,
+      "p95_ms": 0.657,
       "weights_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325"
     },
     "medium": {
       "max_abs_error": 1.2516975402832e-06,
-      "mean_ms": 0.2305011,
+      "mean_ms": 0.3167694,
       "observations": 10000,
-      "p95_ms": 0.448,
+      "p95_ms": 0.638,
       "weights_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61"
     }
   },
-  "android_api": "35",
-  "android_release": "15",
+  "android_api": "36",
+  "android_release": "16",
   "abi": "arm64-v8a",
   "renderer": "emulation",
   "final_snapshot": {
-    "actor_ms_p95": 0.313,
-    "boot_id": "1790854280.86198",
+    "actor_ms_p95": 0.175,
+    "boot_id": "1790853966.92307",
     "bot": [
       300.0,
       170.0
@@ -186,15 +186,15 @@
       0,
       0
     ],
-    "frame_ms_p50": 55.703,
-    "frame_ms_p95": 69.383,
-    "frame_ms_p99": 72.818,
+    "frame_ms_p50": 16.949,
+    "frame_ms_p95": 36.221,
+    "frame_ms_p99": 65.1463333333333,
     "level": 1,
     "model_error": "",
     "model_hash": "prototype",
     "origin": [
-      63.529411315918,
-      242.379241943359
+      70.5555572509766,
+      162.592590332031
     ],
     "paddle": [
       300.0,
@@ -204,30 +204,30 @@
     "parity": {
       "easy": {
         "max_abs_error": 1.01327896118164e-06,
-        "mean_ms": 0.2260534,
+        "mean_ms": 0.2871771,
         "observations": 10000,
-        "p95_ms": 0.457,
+        "p95_ms": 0.464,
         "weights_hash": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2"
       },
       "hard": {
         "max_abs_error": 1.01327896118164e-06,
-        "mean_ms": 0.2137861,
+        "mean_ms": 0.5682492,
         "observations": 10000,
-        "p95_ms": 0.427,
+        "p95_ms": 1.261,
         "weights_hash": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7"
       },
       "insane": {
         "max_abs_error": 8.64267349243164e-07,
-        "mean_ms": 0.2321039,
+        "mean_ms": 0.3430215,
         "observations": 10000,
-        "p95_ms": 0.428,
+        "p95_ms": 0.657,
         "weights_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325"
       },
       "medium": {
         "max_abs_error": 1.2516975402832e-06,
-        "mean_ms": 0.2305011,
+        "mean_ms": 0.3167694,
         "observations": 10000,
-        "p95_ms": 0.448,
+        "p95_ms": 0.638,
         "weights_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61"
       }
     },
@@ -237,8 +237,8 @@
       "failures": [],
       "random_seed": 20261001
     },
-    "physics_cpu_ms": 0.615,
-    "process_cpu_ms": 104.576,
+    "physics_cpu_ms": 26.076,
+    "process_cpu_ms": 55.558,
     "puck": [
       300.0,
       600.0
@@ -252,7 +252,7 @@
       0.0,
       0.0
     ],
-    "scale": 0.788235294117647,
+    "scale": 0.764814814814815,
     "scores": [
       0,
       0
@@ -277,19 +277,19 @@
     "soak_stalls": 0,
     "soak_wall_seconds": 0,
     "state": "menu",
-    "static_memory_bytes": 38112081.0,
+    "static_memory_bytes": 33721865.0,
     "storage_ok": true,
-    "texture_memory_bytes": 38378174.0,
+    "texture_memory_bytes": 20480718.0,
     "touch_id": -1,
     "viewport": [
       600.0,
-      1346.0
+      1066.0
     ],
     "widgets": [
       {
         "rect": [
           297.0,
-          560.5,
+          420.5,
           210.0,
           74.0
         ],
@@ -299,7 +299,7 @@
       {
         "rect": [
           93.0,
-          648.5,
+          508.5,
           414.0,
           74.0
         ],
@@ -309,7 +309,7 @@
       {
         "rect": [
           93.0,
-          736.5,
+          596.5,
           414.0,
           74.0
         ],
@@ -319,7 +319,7 @@
       {
         "rect": [
           93.0,
-          824.5,
+          684.5,
           414.0,
           74.0
         ],

@@ -136,13 +136,27 @@ def main(args):
         device.tap("Resume")
         state = device.wait(lambda s: s["state"] == "rally")
         # Goal fixtures move the actual puck. They never write scores or invoke _goal.
+        goal_pockets = []
+        for scoring_side in [0, 1]:
+            previous_scores = state["scores"]
+            device.command(type="goal", side=scoring_side, angled=True)
+            goal = device.wait(lambda s: s["state"] == "goal" and s["scores"][scoring_side] == previous_scores[scoring_side] + 1)
+            hidden = device.wait(lambda s: s["state"] == "goal" and s["puck_alpha"] == 0)
+            assert hidden["puck"] == goal["puck"] and hidden["puck_visual_offset"][1] == (-28 if scoring_side == 0 else 28), {"goal": goal, "hidden": hidden}
+            assert hidden["puck"][1] < -18 if scoring_side == 0 else hidden["puck"][1] > 1018
+            goal_pockets.append({"side": scoring_side, "frozen_body": hidden["puck"], "visual_offset": hidden["puck_visual_offset"], "alpha": hidden["puck_alpha"]})
+            if index == 0:
+                device.screenshot(f"{args.serial}-goal-pocket-{scoring_side}")
+            served = device.wait(lambda s: s["state"] == "countdown")
+            assert served["puck_alpha"] == 1 and served["puck_visual_offset"] == [0, 0]
+            state = device.wait(lambda s: s["state"] == "rally")
         while max(state["scores"]) < 7:
             previous_scores = state["scores"]
-            device.command(type="goal", side=0)
+            device.command(type="goal", side=0, angled=previous_scores[0] % 2 == 0)
             state = device.wait(lambda s: s["scores"] != previous_scores)
+            state = device.wait(lambda s: s["state"] in ["results", "rally"])
             if state["state"] == "results":
                 break
-            state = device.wait(lambda s: s["state"] == "rally")
         assert state["state"] == "results" and max(state["scores"]) == 7
         device.screenshot(f"{args.serial}-{level.lower()}-results")
         device.tap("Rematch")
@@ -150,7 +164,7 @@ def main(args):
         device.adb("shell", "input", "keyevent", "4") # Back pauses.
         device.wait(lambda s: s["state"] == "paused")
         device.tap("Menu")
-        report["levels"][level.lower()] = {"model_hash": state["model_hash"], "actual_bot_contacts": contact["contacts"][1], "input_pause_goals_rematch_focus_back": "passed"}
+        report["levels"][level.lower()] = {"model_hash": state["model_hash"], "actual_bot_contacts": contact["contacts"][1], "input_pause_goals_rematch_focus_back": "passed", "angled_goal_pockets": goal_pockets}
     device.tap("Customize")
     device.select("Atlantic", 1)
     device.select("Ice", 2)

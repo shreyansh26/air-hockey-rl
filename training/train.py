@@ -12,7 +12,7 @@ from stable_baselines3.common.callbacks import BaseCallback, CallbackList, Check
 from stable_baselines3.common.logger import configure
 import torch
 
-from common import ROOT, physics_hash
+from common import ROOT, physics_hash, checkpoint_physics
 from env import make_env
 from export_policy import export
 
@@ -61,13 +61,14 @@ class Progress(BaseCallback):
         (self.output / "timings.json").write_text(json.dumps(self.rows, indent=2) + "\n")
 
 
-def train(config, resume=None, warm_start=None):
+def train(config, resume=None, warm_start=None, physics_validation=None):
     if resume and warm_start:
         raise ValueError("Choose optimizer-preserving resume or a fresh warm start")
+    source_config = checkpoint_physics(resume or warm_start, physics_validation) if resume or warm_start else None
     torch.set_num_threads(config.get("torch_threads", 1))
     output = ROOT / config["output"]
     output.mkdir(parents=True, exist_ok=True)
-    (output / "config.json").write_text(json.dumps({**config, "physics_hash": physics_hash(), "warm_start": warm_start, "resume": resume}, indent=2) + "\n")
+    (output / "config.json").write_text(json.dumps({**config, "physics_hash": physics_hash(), "warm_start": warm_start, "resume": resume, "physics_validation": physics_validation}, indent=2) + "\n")
     env = make_env(arenas=config["arenas"], processes=config.get("processes", 1), seed=config["seed"], delay=config["delay_ticks"], log_dir=output)
     evaluation = None
     model = None
@@ -75,9 +76,6 @@ def train(config, resume=None, warm_start=None):
     try:
         policy_kwargs = {"net_arch": {"pi": [64, 64], "vf": [64, 64]}, "activation_fn": torch.nn.Tanh, "log_std_init": config.get("log_std_init", 0)}
         if resume:
-            old_config = Path(resume).parent / "config.json"
-            if old_config.exists() and json.loads(old_config.read_text()).get("physics_hash") != physics_hash():
-                raise ValueError("Resume checkpoint uses different physics; retrain instead")
             model = PPO.load(resume, env=env, device=config.get("device", "cpu"), **config["ppo"])
             rng_path = Path(resume).parent / "rng.pt"
             if rng_path.exists():
@@ -95,9 +93,6 @@ def train(config, resume=None, warm_start=None):
             model = PPO("MlpPolicy", env, device=config.get("device", "cpu"), seed=config["seed"], policy_kwargs=policy_kwargs,
                         verbose=1, **config["ppo"])
             if warm_start:
-                old_config = Path(warm_start).parent / "config.json"
-                if not old_config.exists() or json.loads(old_config.read_text()).get("physics_hash") != physics_hash():
-                    raise ValueError("Warm-start checkpoint needs matching recorded physics")
                 source = PPO.load(warm_start, device="cpu")
                 copied = {key: value for key, value in source.policy.state_dict().items() if key != "log_std"}
                 missing, unexpected = model.policy.load_state_dict(copied, strict=False)
@@ -111,7 +106,7 @@ def train(config, resume=None, warm_start=None):
             evaluation.env_method("configure", mode="rally", shaping=0, hit_reward=0)
             callbacks.append(EvalCallback(evaluation, best_model_save_path=str(output / "best"), log_path=str(output), eval_freq=max(1, config["eval_every"] // total_envs), n_eval_episodes=20, deterministic=True))
         pool_path = Path(resume).parent / "opponents.json" if resume else output / "opponents.json"
-        if pool_path.exists():
+        if pool_path.exists() and (not source_config or source_config["physics_hash"] == physics_hash()):
             progress.pool = json.loads(pool_path.read_text())
             env.env_method("configure", opponents=progress.pool)
         remaining = max(0, config["transitions"] - model.num_timesteps)
@@ -146,6 +141,7 @@ if __name__ == "__main__":
     parser.add_argument("--config", required=True)
     parser.add_argument("--resume")
     parser.add_argument("--warm-start", help="Copy actor/critic weights into a fresh stock PPO optimizer/exploration distribution")
+    parser.add_argument("--physics-validation", help="Passed tournament for this checkpoint after a rule-only correction; starts a fresh opponent pool")
     parser.add_argument("--seed", type=int)
     parser.add_argument("--delay", type=int)
     parser.add_argument("--output")
@@ -155,4 +151,4 @@ if __name__ == "__main__":
     for key, value in [("seed", args.seed), ("delay_ticks", args.delay), ("output", args.output), ("transitions", args.transitions)]:
         if value is not None:
             config[key] = value
-    train(config, args.resume, args.warm_start)
+    train(config, args.resume, args.warm_start, args.physics_validation)

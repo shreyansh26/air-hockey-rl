@@ -1,0 +1,291 @@
+{
+  "url": "http://127.0.0.1:8880/",
+  "levels": {
+    "easy": {
+      "model_hash": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2",
+      "actual_bot_contact": 1,
+      "mouse_drag": "passed",
+      "pause_resume_goals_results_rematch": "passed"
+    },
+    "medium": {
+      "model_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
+      "actual_bot_contact": 1,
+      "pause_resume_goals_results_rematch": "passed"
+    },
+    "hard": {
+      "model_hash": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7",
+      "actual_bot_contact": 1,
+      "pause_resume_goals_results_rematch": "passed"
+    },
+    "insane": {
+      "model_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325",
+      "actual_bot_contact": 1,
+      "pause_resume_goals_results_rematch": "passed"
+    }
+  },
+  "viewport": [
+    390,
+    844
+  ],
+  "physics": {
+    "cases": 108,
+    "check": "physics",
+    "failures": [],
+    "random_seed": 20261001
+  },
+  "parity": {
+    "easy": {
+      "max_abs_error": 0.00000101327896118164,
+      "mean_ms": 0.14842,
+      "observations": 10000,
+      "p95_ms": 0.2,
+      "weights_hash": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2"
+    },
+    "hard": {
+      "max_abs_error": 0.00000101327896118164,
+      "mean_ms": 0.14584,
+      "observations": 10000,
+      "p95_ms": 0.2,
+      "weights_hash": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7"
+    },
+    "insane": {
+      "max_abs_error": 8.64267349243164e-7,
+      "mean_ms": 0.14747,
+      "observations": 10000,
+      "p95_ms": 0.2,
+      "weights_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325"
+    },
+    "medium": {
+      "max_abs_error": 0.0000012516975402832,
+      "mean_ms": 0.14713,
+      "observations": 10000,
+      "p95_ms": 0.2,
+      "weights_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61"
+    }
+  },
+  "cosmetics_persist": "passed",
+  "landscape": {
+    "viewport": [
+      844,
+      390
+    ],
+    "logical_viewport": [
+      2161,
+      1000
+    ],
+    "menus_accessible": true
+  },
+  "desktop": {
+    "viewport": [
+      1280,
+      900
+    ],
+    "pause": "passed"
+  },
+  "offline_cached_reload": {
+    "passed": false,
+    "browser": "in-app browser",
+    "result": "Reload failed after stopping server; checking conventional browser caching separately"
+  },
+  "focus_loss_explicit_resume": {
+    "passed": true,
+    "browser": "Firefox",
+    "method": "native new-tab switch, paused on return, explicit Resume"
+  },
+  "firefox": {
+    "render": "passed",
+    "cached_offline_reload": "passed",
+    "focus_pause_resume": "passed"
+  },
+  "before_goal_fix": {
+    "easy": {
+      "model_hash": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2",
+      "actual_bot_contact": 1,
+      "mouse_drag": "passed",
+      "pause_resume_goals_results_rematch": "passed"
+    },
+    "medium": {
+      "model_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
+      "actual_bot_contact": 1,
+      "pause_resume_goals_results_rematch": "passed"
+    },
+    "hard": {
+      "model_hash": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7",
+      "actual_bot_contact": 1,
+      "pause_resume_goals_results_rematch": "passed"
+    },
+    "insane": {
+      "model_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325",
+      "actual_bot_contact": 1,
+      "pause_resume_goals_results_rematch": "passed"
+    }
+  },
+  "goal_rule_regression": {
+    "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
+    "levels": {
+      "easy": {
+        "model_hash": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2",
+        "actual_bot_contacts": 1,
+        "goal_pockets": [
+          {
+            "side": 0,
+            "body": [
+              375.905914306641,
+              -25.6023139953613
+            ],
+            "alpha": 0,
+            "visual_offset": [
+              0,
+              -28
+            ]
+          },
+          {
+            "side": 1,
+            "body": [
+              375.905883789062,
+              1025.60229492188
+            ],
+            "alpha": 0,
+            "visual_offset": [
+              0,
+              28
+            ]
+          }
+        ],
+        "results_rematch": "passed"
+      },
+      "medium": {
+        "model_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
+        "actual_bot_contacts": 1,
+        "goal_pockets": [
+          {
+            "side": 0,
+            "body": [
+              375.905914306641,
+              -25.6023139953613
+            ],
+            "alpha": 0,
+            "visual_offset": [
+              0,
+              -28
+            ]
+          },
+          {
+            "side": 1,
+            "body": [
+              375.905883789062,
+              1025.60229492188
+            ],
+            "alpha": 0,
+            "visual_offset": [
+              0,
+              28
+            ]
+          }
+        ],
+        "results_rematch": "passed",
+        "goal_pause": "passed"
+      },
+      "hard": {
+        "model_hash": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7",
+        "actual_bot_contacts": 1,
+        "goal_pockets": [
+          {
+            "side": 0,
+            "body": [
+              375.905914306641,
+              -25.6023139953613
+            ],
+            "alpha": 0,
+            "visual_offset": [
+              0,
+              -28
+            ]
+          },
+          {
+            "side": 1,
+            "body": [
+              375.905883789062,
+              1025.60229492188
+            ],
+            "alpha": 0,
+            "visual_offset": [
+              0,
+              28
+            ]
+          }
+        ],
+        "results_rematch": "passed",
+        "goal_pause": "checked on Medium"
+      },
+      "insane": {
+        "model_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325",
+        "actual_bot_contacts": 1,
+        "goal_pockets": [
+          {
+            "side": 0,
+            "body": [
+              375.905914306641,
+              -25.6023139953613
+            ],
+            "alpha": 0,
+            "visual_offset": [
+              0,
+              -28
+            ]
+          },
+          {
+            "side": 1,
+            "body": [
+              375.905883789062,
+              1025.60229492188
+            ],
+            "alpha": 0,
+            "visual_offset": [
+              0,
+              28
+            ]
+          }
+        ],
+        "results_rematch": "passed",
+        "goal_pause": "checked on Medium"
+      }
+    },
+    "physics": {
+      "cases": 113,
+      "check": "physics",
+      "failures": [],
+      "random_seed": 20261001
+    },
+    "parity": {
+      "easy": {
+        "max_abs_error": 0.00000101327896118164,
+        "mean_ms": 0.15069,
+        "observations": 10000,
+        "p95_ms": 0.2,
+        "weights_hash": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2"
+      },
+      "hard": {
+        "max_abs_error": 0.00000101327896118164,
+        "mean_ms": 0.15633,
+        "observations": 10000,
+        "p95_ms": 0.2,
+        "weights_hash": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7"
+      },
+      "insane": {
+        "max_abs_error": 8.64267349243164e-7,
+        "mean_ms": 0.14926,
+        "observations": 10000,
+        "p95_ms": 0.2,
+        "weights_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325"
+      },
+      "medium": {
+        "max_abs_error": 0.0000012516975402832,
+        "mean_ms": 0.1505,
+        "observations": 10000,
+        "p95_ms": 0.2,
+        "weights_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61"
+      }
+    }
+  }
+}

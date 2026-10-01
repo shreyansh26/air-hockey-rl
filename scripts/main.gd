@@ -54,6 +54,7 @@ func _ready() -> void:
 	arena_view.world_2d = World2D.new()
 	arena_view.transparent_bg = true
 	arena_view.handle_input_locally = false
+	arena_view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	add_child(arena_view)
 	arena = ARENA.instantiate()
 	arena.position = Vector2(40, 40)
@@ -217,6 +218,7 @@ func _menu() -> void:
 	panel_mode = "menu"
 	_clear_input()
 	arena.reset_rally()
+	_reset_puck_visual()
 	actor = null
 	_clear_panel("PLAY THE TABLE", "A quick match. A worthy opponent.")
 	_picker("Difficulty", LEVELS, level, func(index): level = index; settings.level = index; _save_settings())
@@ -314,6 +316,7 @@ func _start_match() -> void:
 func _begin_serve(seconds: float) -> void:
 	_clear_input()
 	arena.reset_rally(serve_side)
+	_reset_puck_visual()
 	trail.clear()
 	if history:
 		history.reset(arena, 1)
@@ -338,7 +341,14 @@ func _physics_process(delta: float) -> void:
 	elif state == "goal":
 		timer -= delta
 		if timer <= 0:
-			_begin_serve(1.2)
+			if scores.max() >= 7:
+				state = "results"
+				_clear_panel("YOU WIN" if scores[0] >= 7 else "BOT WINS", str(scores[0]) + "  —  " + str(scores[1]))
+				_button("Rematch", _start_match)
+				_button("Menu", _menu)
+				pause_button.hide()
+			else:
+				_begin_serve(1.2)
 	elif state == "rally":
 		if touch_id != -1:
 			arena.drive_to(0, drag_target)
@@ -367,6 +377,11 @@ func _physics_process(delta: float) -> void:
 				arena.paddles[1].set_command(-action)
 
 func _process(delta: float) -> void:
+	if state == "goal":
+		var progress := clampf((1.0 - timer) / 0.28, 0, 1)
+		arena.puck.visual_offset = Vector2(0, (-1 if serve_side == 1 else 1) * 28 * progress)
+		arena.puck.modulate.a = 1.0 - smoothstep(0.2, 1.0, progress)
+		arena.puck.queue_redraw()
 	frames.append(delta * 1000)
 	if frames.size() > 7200:
 		frames.pop_front()
@@ -395,17 +410,16 @@ func _goal(side: int) -> void:
 	_update_score()
 	if settings.haptics and OS.get_name() == "Android":
 		Input.vibrate_handheld(40)
-	if scores[side] >= 7:
-		state = "results"
-		_clear_panel("YOU WIN" if side == 0 else "BOT WINS", str(scores[0]) + "  —  " + str(scores[1]))
-		_button("Rematch", _start_match)
-		_button("Menu", _menu)
-		pause_button.hide()
-	else:
-		state = "goal"
-		timer = 1.0
-		serve_side = 1 - side
-		state_label.text = "YOUR POINT" if side == 0 else "BOT POINT"
+	state = "goal"
+	timer = 1.0
+	serve_side = 1 - side
+	state_label.text = "YOUR POINT" if side == 0 else "BOT POINT"
+	trail.clear()
+
+func _reset_puck_visual() -> void:
+	arena.puck.visual_offset = Vector2.ZERO
+	arena.puck.modulate.a = 1.0
+	arena.puck.queue_redraw()
 
 func _stall() -> void:
 	if state == "rally":

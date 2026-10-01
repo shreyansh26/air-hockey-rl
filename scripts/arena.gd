@@ -14,6 +14,7 @@ var ticks := 0
 var last_position := Vector2.ZERO
 var quiet_ticks := 0
 var contacts := [0, 0]
+var last_stall_reason := ""
 var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
@@ -86,6 +87,7 @@ func reset_rally(serve_side: int = 0, velocity := Vector2.ZERO) -> void:
 	ticks = 0
 	quiet_ticks = 0
 	contacts = [0, 0]
+	last_stall_reason = ""
 
 func launch(serve_side: int) -> void:
 	set_running(true)
@@ -99,6 +101,7 @@ func _physics_process(delta: float) -> void:
 	ticks += 1
 	var current := puck.position
 	if not current.is_finite() or not puck.linear_velocity.is_finite():
+		last_stall_reason = "non_finite"
 		set_running(false)
 		stalled.emit()
 		return
@@ -108,8 +111,15 @@ func _physics_process(delta: float) -> void:
 		set_running(false)
 		goal.emit(side)
 		return
+	# A failed collision must end visibly in a re-serve, never a puck in the void.
+	if current.x < -CONFIG.puck_radius or current.x > CONFIG.width + CONFIG.puck_radius or current.y < -60 or current.y > CONFIG.height + 60:
+		last_stall_reason = "out_of_bounds"
+		set_running(false)
+		stalled.emit()
+		return
 	quiet_ticks = quiet_ticks + 1 if puck.linear_velocity.length() < 25 else 0
 	if quiet_ticks >= int(CONFIG.stall_seconds * 120):
+		last_stall_reason = "quiet"
 		set_running(false)
 		stalled.emit()
 
@@ -119,7 +129,9 @@ func crossed_goal(previous: Vector2, current: Vector2) -> int:
 		var crossed: bool = previous.y >= plane and current.y < plane if side == 0 else previous.y <= plane and current.y > plane
 		if crossed and current.y != previous.y:
 			var x := lerpf(previous.x, current.x, (plane - previous.y) / (current.y - previous.y))
-			var clearance: float = CONFIG.goal_width / 2 - CONFIG.puck_radius - 18.0
+			# The colliders enforce post clearance. At this plane the whole puck has
+			# passed the court; subtracting the post again rejects legal angled exits.
+			var clearance: float = CONFIG.goal_width / 2 - CONFIG.puck_radius
 			if absf(x - CONFIG.width / 2) <= clearance:
 				return side # top goal scores bottom (0)
 	return -1

@@ -10,7 +10,7 @@ import numpy as np
 from stable_baselines3 import PPO
 import torch
 
-from common import ROOT
+from common import ROOT, physics_hash
 from env import make_env
 
 
@@ -96,6 +96,8 @@ def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
 def main(args):
     torch.set_num_threads(1)
     bundle = json.loads(Path(args.manifest).read_text())
+    if bundle["physics_hash"] != physics_hash():
+        raise ValueError("Tournament manifest does not match the running Arena source")
     checked_levels = ["insane"] if args.baseline_only else list(bundle["levels"])
     for level in checked_levels:
         profile = bundle["levels"][level]
@@ -131,6 +133,8 @@ def main(args):
                       "wilson_95": wilson(wins, total), "passed": args.matches >= 400 and total == args.matches and wins / max(1, total) >= 0.8}
         print(json.dumps({key: gates[key]}), flush=True)
     evidence = {"physics_hash": bundle["physics_hash"], "model_hashes": {level: bundle["levels"][level]["weights_sha256"] for level in levels},
+                "checkpoint_hashes": {level: bundle["levels"][level]["checkpoint_sha256"] for level in levels},
+                "training_physics_hashes": {level: bundle["levels"][level].get("training_physics_hash", bundle["physics_hash"]) for level in levels},
                 "matches_per_pair": args.matches, "max_match_seconds": args.max_decisions / 30, "gates": gates,
                 "scope": "baseline-only" if args.baseline_only else "full-difficulty-tournament",
                 "qualified": not args.baseline_only and all(gate["passed"] for gate in gates.values()), "human_playtests": "unverified", "matchups": reports}

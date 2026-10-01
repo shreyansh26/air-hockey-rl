@@ -5,6 +5,7 @@ var tint := Color("eaf8ff")
 var reduced_effects := false
 var reset_transform := Transform2D.IDENTITY
 var integration_ticks := 0
+var visual_offset := Vector2.ZERO # Goal presentation only; never moves the body.
 
 func _ready() -> void:
 	gravity_scale = 0.0
@@ -42,6 +43,7 @@ func reset_at(point: Vector2, velocity := Vector2.ZERO) -> void:
 	reset_physics_interpolation()
 
 func _draw() -> void:
+	draw_set_transform(visual_offset)
 	var r: float = CONFIG.puck_radius
 	if not reduced_effects:
 		draw_circle(Vector2(3, 6), r + 2, Color(0, 0, 0, 0.4))
