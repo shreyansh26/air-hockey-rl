@@ -25,6 +25,9 @@ var telemetry_enabled := true
 var silence_until := 0
 var boot_id := str(Time.get_unix_time_from_system())
 var last_goal := {}
+var touch_trace: Array = []
+var touch_trace_ticks := 0
+var touch_trace_id := ""
 
 func initialize(value: Control) -> void:
 	main = value
@@ -44,6 +47,17 @@ func initialize(value: Control) -> void:
 		JavaScriptBridge.eval("""(() => { let p=document.createElement('details');p.id='qa-panel';p.open=true;p.style='position:fixed;bottom:0;left:0;z-index:9999;background:#071621;color:white;font:12px monospace;max-width:100vw';p.innerHTML='<summary>QA</summary><input aria-label="QA command" id="qa-command" style="width:min(400px,95vw)"><pre id="qa-state" style="max-height:100px;overflow:auto"></pre>';document.body.append(p) })()""")
 
 func _physics_process(_delta: float) -> void:
+	if touch_trace_ticks > 0:
+		touch_trace.append({"ms": Time.get_ticks_msec(), "id": main.touch_id,
+			"target": [main.drag_target.x, main.drag_target.y],
+			"paddle": [main.arena.paddles[0].position.x, main.arena.paddles[0].position.y],
+			"velocity": [main.arena.paddles[0].linear_velocity.x, main.arena.paddles[0].linear_velocity.y]})
+		touch_trace_ticks -= 1
+		if touch_trace_ticks == 0:
+			var file := FileAccess.open("user://qa-touch-trace.json", FileAccess.WRITE)
+			if file:
+				file.store_string(JSON.stringify({"id": touch_trace_id, "samples": touch_trace}))
+			touch_trace.clear()
 	if autoplay and main.state == "rally":
 		main.arena.baseline(0, "intercept")
 		var tick: int = main.arena.puck.integration_ticks
@@ -105,6 +119,10 @@ func _process(delta: float) -> void:
 
 func _command(command: Dictionary) -> void:
 	match command.get("type", ""):
+		"touch_trace":
+			touch_trace.clear()
+			touch_trace_ticks = 1200
+			touch_trace_id = str(command.get("id", ""))
 		"snapshot":
 			pass
 		"silence":
@@ -221,6 +239,9 @@ func _collect_widgets(node: Node, widgets: Array) -> void:
 	if node is ScrollContainer and node.is_visible_in_tree():
 		var rect: Rect2 = node.get_global_rect()
 		widgets.append({"type": "ScrollContainer", "rect": [rect.position.x, rect.position.y, rect.size.x, rect.size.y]})
+	if node is HSlider and node.is_visible_in_tree():
+		var rect: Rect2 = node.get_global_rect()
+		widgets.append({"type": "HSlider", "rect": [rect.position.x, rect.position.y, rect.size.x, rect.size.y], "value": node.value})
 	if node is BaseButton and node.is_visible_in_tree():
 		var rect: Rect2 = node.get_global_rect()
 		widgets.append({"text": node.text if node.text else node.tooltip_text, "rect": [rect.position.x, rect.position.y, rect.size.x, rect.size.y], "type": node.get_class()})

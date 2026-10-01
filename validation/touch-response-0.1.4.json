@@ -1,0 +1,263 @@
+{
+  "version": "0.1.4-candidate",
+  "physics_hash": "cec96e949686fd652d905c9340eb5432eb48ad3b5da4aa9b715636366d7492cb",
+  "baseline_commit": "d275724",
+  "headless_before": {
+    "check": "touch_serve",
+    "failures": [
+      "fast zigzags keep mean error below 12 table units",
+      "fast zigzags stay within one paddle radius",
+      "fast zigzags keep mean error below 12 table units",
+      "fast zigzags stay within one paddle radius"
+    ],
+    "tracking": {
+      "current": {
+        "mean_lag_units": 14.9999984741211,
+        "peak_speed": 750.00048828125,
+        "settling_error": 6.103515625e-05
+      },
+      "legacy": {
+        "mean_lag_units": 44.8082336425781,
+        "peak_speed": 599.888671875,
+        "settling_error": 0.03448486328125
+      }
+    },
+    "zigzags": [
+      {
+        "after": {
+          "mean_error": 62.1013046900431,
+          "peak_acceleration": 10000.0048828125,
+          "peak_error": 114.763427734375,
+          "peak_speed": 1050.0,
+          "settling_error": 0.0
+        },
+        "diagonal": false
+      },
+      {
+        "after": {
+          "mean_error": 67.4564266403516,
+          "peak_acceleration": 10000.0048828125,
+          "peak_error": 130.998489379883,
+          "peak_speed": 1050.0,
+          "settling_error": 3.0517578125e-05
+        },
+        "diagonal": true
+      }
+    ]
+  },
+  "headless_after": {
+    "check": "touch_serve",
+    "failures": [],
+    "tracking": {
+      "current": {
+        "mean_lag_units": 4.99999618530273,
+        "peak_speed": 750.001770019531,
+        "settling_error": 0.0
+      },
+      "legacy": {
+        "mean_lag_units": 44.8082366943359,
+        "peak_speed": 599.890075683594,
+        "settling_error": 0.03448486328125
+      }
+    },
+    "zigzags": [
+      {
+        "after": {
+          "mean_error": 7.88762442270915,
+          "peak_acceleration": 40000.0012207031,
+          "peak_error": 21.68994140625,
+          "peak_speed": 1050.0,
+          "settled_tick": 13,
+          "settling_error": 0.0
+        },
+        "diagonal": false
+      },
+      {
+        "after": {
+          "mean_error": 10.0365751869977,
+          "peak_acceleration": 40000.0048828125,
+          "peak_error": 25.8282508850098,
+          "peak_speed": 1050.0,
+          "settled_tick": 13,
+          "settling_error": 0.0
+        },
+        "diagonal": true
+      }
+    ]
+  },
+  "native": {
+    "before": {
+      "source": "native Android touchscreen MotionEvents, 60 Hz, five 200 ms reversal pairs then hold",
+      "samples": 214,
+      "mean_error": 61.59232693966302,
+      "peak_error": 123.044250488281,
+      "settled_error": 1.5258789005656581e-05,
+      "peak_speed": 1050.0,
+      "settings": {
+        "bot": 1,
+        "haptics": true,
+        "human": 0,
+        "level": 1,
+        "offset": 0.0,
+        "puck": 0,
+        "reduced_effects": false,
+        "settings_version": 1,
+        "sound": false,
+        "table": 0
+      },
+      "trace_sha256": "036d7980ef7de46aa7439cf45b13e9733ab6ed8da2523bad167c3e9cadfd76e6",
+      "last_target": [
+        238.743942260742,
+        820.0
+      ],
+      "last_paddle": [
+        238.743957519531,
+        820.0
+      ]
+    },
+    "after": {
+      "source": "native Android touchscreen MotionEvents, 60 Hz, five 200 ms reversal pairs then hold",
+      "samples": 215,
+      "mean_error": 11.101690602856994,
+      "peak_error": 33.20492553711003,
+      "settled_error": 1.5258788977234872e-05,
+      "peak_speed": 1050.0000166440987,
+      "settings": {
+        "bot": 1,
+        "haptics": true,
+        "human": 0,
+        "level": 1,
+        "offset": 0.0,
+        "puck": 0,
+        "reduced_effects": false,
+        "settings_version": 1,
+        "sound": false,
+        "table": 0
+      },
+      "trace_sha256": "ff1a13f1f9e69f10cf6e812a89d885de9c256b2031ee57748a29d05afba78897",
+      "last_target": [
+        236.859970092773,
+        820.0
+      ],
+      "last_paddle": [
+        236.859985351562,
+        820.0
+      ]
+    },
+    "diagonal": {
+      "source": "native Android touchscreen MotionEvents, 60 Hz, five 200 ms reversal pairs then hold",
+      "samples": 214,
+      "mean_error": 14.986388476206052,
+      "peak_error": 37.81782721937435,
+      "settled_error": 0.0,
+      "peak_speed": 1050.000078693617,
+      "settings": {
+        "bot": 1,
+        "haptics": true,
+        "human": 0,
+        "level": 1,
+        "offset": 60.0,
+        "puck": 0,
+        "reduced_effects": false,
+        "settings_version": 1,
+        "sound": false,
+        "table": 0
+      },
+      "trace_sha256": "268c716a7247d1d2d02d9d1097074df0f3d4305d75b0dfa70ab25a1a620cc8eb",
+      "last_target": [
+        235.294494628906,
+        762.353271484375
+      ],
+      "last_paddle": [
+        235.294494628906,
+        762.353271484375
+      ]
+    },
+    "offset_backrail": {
+      "source": "native stationary touchscreen hold below court at table (300,1010), offset 60",
+      "samples": 205,
+      "mean_error": 0.003474240500414683,
+      "peak_error": 0.21006695044873813,
+      "settled_error": 6.1035156022626325e-05,
+      "peak_speed": 1050.0,
+      "settings": {
+        "bot": 1,
+        "haptics": true,
+        "human": 0,
+        "level": 1,
+        "offset": 60.0,
+        "puck": 0,
+        "reduced_effects": false,
+        "settings_version": 1,
+        "sound": false,
+        "table": 0
+      },
+      "trace_sha256": "49534c47f30a326193993d4d29ff99ea65ce6237b290ea50622578f2f41592fa",
+      "last_target": [
+        300.0,
+        950.000061035156
+      ],
+      "last_paddle": [
+        300.0,
+        950.000122070312
+      ]
+    }
+  },
+  "native_mean_error_reduction_percent": 81.97552981927048,
+  "browser": {
+    "physics": {
+      "cases": 113,
+      "failures": []
+    },
+    "actor_parity_observations": 40000,
+    "max_abs_actor_error": 1.13248825073242e-06,
+    "pointer_drag": "paddle moved from (300,830) to (399.62,732.15); release cleared pointer"
+  },
+  "physical_phone_touch_to_photon_measured": false,
+  "new_soak": false,
+  "native_validation": {
+    "serial": "emulator-5560",
+    "apk_sha256": "4ed3cdfcee1e87cf3becaccf3c0a526e100790e916a61cc3e00852c2a6572fb3",
+    "physics": {
+      "cases": 113,
+      "check": "physics",
+      "failures": [],
+      "random_seed": 20261001
+    },
+    "parity": {
+      "easy": {
+        "max_abs_error": 8.94069671630859e-07,
+        "mean_ms": 0.0907112,
+        "observations": 10000,
+        "p95_ms": 0.116,
+        "weights_hash": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2"
+      },
+      "hard": {
+        "max_abs_error": 1.01327896118164e-06,
+        "mean_ms": 0.0897353,
+        "observations": 10000,
+        "p95_ms": 0.118,
+        "weights_hash": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7"
+      },
+      "insane": {
+        "max_abs_error": 9.5367431640625e-07,
+        "mean_ms": 0.0896965,
+        "observations": 10000,
+        "p95_ms": 0.117,
+        "weights_hash": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325"
+      },
+      "medium": {
+        "max_abs_error": 1.13248825073242e-06,
+        "mean_ms": 0.0918942,
+        "observations": 10000,
+        "p95_ms": 0.123,
+        "weights_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61"
+      }
+    }
+  },
+  "parity_validation": "parity-touch-motor.json",
+  "qualified": false,
+  "model_gate": "Two strong-interceptor matches remain censored at both 900 and 1800 simulated seconds",
+  "tournament": "difficulty-touch-motor.json",
+  "extended_tournament": "touch-motor-intercept-extended.json"
+}

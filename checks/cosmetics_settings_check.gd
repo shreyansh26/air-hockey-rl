@@ -29,7 +29,7 @@ func run() -> void:
 	config.set_value("game", "offset", "bad")
 	config.save(PATH)
 	main._load_settings()
-	check(not main.settings.sound and main.settings.table == 2 and main.settings.human == 0 and main.settings.offset == 0, "legacy mute and corrupted appearance settings")
+	check(not main.settings.sound and main.settings.table == 2 and main.settings.human == 0 and main.settings.offset == 60, "legacy mute and corrupted appearance settings")
 	config.load(PATH)
 	check(config.get_value("game", "settings_version") == 1 and config.get_value("game", "sound") == false, "mute migration persists once")
 	main._settings_menu()

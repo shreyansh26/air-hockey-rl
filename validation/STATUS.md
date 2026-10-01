@@ -7,6 +7,27 @@ Gameplay loads one of four trained actors and fails visibly if it is missing
 or incompatible. Training, QA, critics, optimizers, and ONNX companions are
 excluded from production exports.
 
+**0.1.4-candidate touch response:** rapid held-finger zigzags reproduce the
+old lag in the Android APK. The quicker shared motor and direction-preserving
+input reduce native mean error by 82%; headless horizontal/diagonal errors fall
+85–87% and settle within 108 ms after the finger stops. Speed, mass, CCD and
+legal halves remain enforced. The offset has a live preview and accepts a
+finger below the court to reach the back rail. Desktop, Android API 35 and web
+pass 113 physics cases and 40,000 actor parity comparisons each. Touch/serve,
+layout, settings, goal-flow, observations and launch checks pass.
+
+**Model/runtime promotion is blocked.** All 1,200 adjacent-difficulty matches
+complete and pass: Medium>Easy 81%, Hard>Medium 96.5%, Insane>Hard 96.75%.
+Insane also wins 400/400 puck-chaser matches. Against the strong interceptor,
+397 wins and one loss finish, but two matches time out at both 900 and 1,800
+simulation seconds. They are explicitly censored, never counted as wins. The
+full completion gate therefore fails. This is a trained-actor playtest APK,
+not a newly qualified production bundle; export/resume guards reject its
+compatibility report. The accepted 0.1.3 APK is preserved separately.
+See [touch evidence](touch-response-0.1.4.md), [the tournament](difficulty-touch-motor.json),
+and [the longer-limit rerun](touch-motor-intercept-extended.json). Physical phone
+latency and the prior memory/frame-pacing gates remain open.
+
 **0.1.3 layout/icon follow-up:** the scoreboard is centered over the court,
 with Pause kept clear on narrow screens. Legacy and adaptive launcher icons
 have full blue backgrounds. Six-size layout checks and launch/icon checks pass;
@@ -25,8 +46,8 @@ The scripted finger-follow gap falls by 66.5%. Final Android 15/16 regressions,
 80,000 native parity observations, six-size layouts, web drag/pause, production
 packaging and OnePlus installation pass. Details and limits are in
 [mobile-ui-0.1.2.md](mobile-ui-0.1.2.md); the earlier serve/defaults/launch update
-is recorded in [mobile-ux.md](mobile-ux.md). The table below retains previous
-soak evidence; web memory, frame pacing and human calibration remain open.
+is recorded in [mobile-ux.md](mobile-ux.md). The table below records the prior
+accepted runtime, including its soak evidence; web memory, frame pacing and human calibration remain open.
 
 | Gate | State |
 | --- | --- |

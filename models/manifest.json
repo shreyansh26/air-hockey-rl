@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
-  "quality": "automated match gates passed after angled-goal correction; human skill labels unverified",
+  "physics_hash": "cec96e949686fd652d905c9340eb5432eb48ad3b5da4aa9b715636366d7492cb",
+  "quality": "playtest candidate: touch and difficulty-order checks pass; strong-baseline completion gate fails (2/400 timeouts)",
   "levels": {
     "easy": {
       "schema_version": 1,
@@ -19,8 +19,8 @@
       "matrix_order": "row-major",
       "dtype": "little-endian-float32",
       "parameters": 7682,
-      "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
-      "schema_hash": "27543f01adff26af77b4c02493463f37a7a65d601631dbe4b5bf2a086a93aa7f",
+      "physics_hash": "cec96e949686fd652d905c9340eb5432eb48ad3b5da4aa9b715636366d7492cb",
+      "schema_hash": "bfa3a24e00c7ddf0ed0de87534f0cb38487176ddafa8ba88e149bbb7db329b9d",
       "physics_hz": 120,
       "action_ticks": 4,
       "weights_sha256": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2",
@@ -34,7 +34,7 @@
         "paddle_velocity": 1050,
         "position_clip": 1.1
       },
-      "quality": "automated match gates passed; human skill labels unverified",
+      "quality": "playtest candidate: touch and difficulty-order checks pass; strong-baseline completion gate fails (2/400 timeouts)",
       "training_provenance": {
         "seed": 59,
         "ppo": {
@@ -70,7 +70,7 @@
       "checkpoint": "training/checkpoints/easy/final.zip",
       "actor_manifest": "models/easy/actor.json",
       "training_physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
-      "physics_validation": "validation/difficulty.json"
+      "physics_validation": "validation/difficulty-touch-motor.json"
     },
     "medium": {
       "schema_version": 1,
@@ -88,8 +88,8 @@
       "matrix_order": "row-major",
       "dtype": "little-endian-float32",
       "parameters": 7682,
-      "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
-      "schema_hash": "27543f01adff26af77b4c02493463f37a7a65d601631dbe4b5bf2a086a93aa7f",
+      "physics_hash": "cec96e949686fd652d905c9340eb5432eb48ad3b5da4aa9b715636366d7492cb",
+      "schema_hash": "bfa3a24e00c7ddf0ed0de87534f0cb38487176ddafa8ba88e149bbb7db329b9d",
       "physics_hz": 120,
       "action_ticks": 4,
       "weights_sha256": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
@@ -103,7 +103,7 @@
         "paddle_velocity": 1050,
         "position_clip": 1.1
       },
-      "quality": "automated match gates passed; human skill labels unverified",
+      "quality": "playtest candidate: touch and difficulty-order checks pass; strong-baseline completion gate fails (2/400 timeouts)",
       "training_provenance": {
         "seed": 53,
         "ppo": {
@@ -139,7 +139,7 @@
       "checkpoint": "training/checkpoints/medium/final.zip",
       "actor_manifest": "models/medium/actor.json",
       "training_physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
-      "physics_validation": "validation/difficulty.json"
+      "physics_validation": "validation/difficulty-touch-motor.json"
     },
     "hard": {
       "schema_version": 1,
@@ -157,8 +157,8 @@
       "matrix_order": "row-major",
       "dtype": "little-endian-float32",
       "parameters": 7682,
-      "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
-      "schema_hash": "27543f01adff26af77b4c02493463f37a7a65d601631dbe4b5bf2a086a93aa7f",
+      "physics_hash": "cec96e949686fd652d905c9340eb5432eb48ad3b5da4aa9b715636366d7492cb",
+      "schema_hash": "bfa3a24e00c7ddf0ed0de87534f0cb38487176ddafa8ba88e149bbb7db329b9d",
       "physics_hz": 120,
       "action_ticks": 4,
       "weights_sha256": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7",
@@ -172,7 +172,7 @@
         "paddle_velocity": 1050,
         "position_clip": 1.1
       },
-      "quality": "automated match gates passed; human skill labels unverified",
+      "quality": "playtest candidate: touch and difficulty-order checks pass; strong-baseline completion gate fails (2/400 timeouts)",
       "training_provenance": {
         "seed": 47,
         "ppo": {
@@ -208,7 +208,7 @@
       "checkpoint": "training/checkpoints/hard/final.zip",
       "actor_manifest": "models/hard/actor.json",
       "training_physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
-      "physics_validation": "validation/difficulty.json"
+      "physics_validation": "validation/difficulty-touch-motor.json"
     },
     "insane": {
       "schema_version": 1,
@@ -226,8 +226,8 @@
       "matrix_order": "row-major",
       "dtype": "little-endian-float32",
       "parameters": 7682,
-      "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
-      "schema_hash": "27543f01adff26af77b4c02493463f37a7a65d601631dbe4b5bf2a086a93aa7f",
+      "physics_hash": "cec96e949686fd652d905c9340eb5432eb48ad3b5da4aa9b715636366d7492cb",
+      "schema_hash": "bfa3a24e00c7ddf0ed0de87534f0cb38487176ddafa8ba88e149bbb7db329b9d",
       "physics_hz": 120,
       "action_ticks": 4,
       "weights_sha256": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325",
@@ -241,7 +241,7 @@
         "paddle_velocity": 1050,
         "position_clip": 1.1
       },
-      "quality": "automated match gates passed; human skill labels unverified",
+      "quality": "playtest candidate: touch and difficulty-order checks pass; strong-baseline completion gate fails (2/400 timeouts)",
       "training_provenance": {
         "seed": 43,
         "ppo": {
@@ -277,7 +277,7 @@
       "checkpoint": "training/checkpoints/insane/final.zip",
       "actor_manifest": "models/insane/actor.json",
       "training_physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
-      "physics_validation": "validation/difficulty.json"
+      "physics_validation": "validation/difficulty-touch-motor.json"
     }
   }
 }

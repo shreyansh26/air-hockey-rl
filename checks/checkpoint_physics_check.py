@@ -1,4 +1,4 @@
-"""Accepted rule migration cannot authorize another checkpoint or a failed gate."""
+"""Accepted runtime migration cannot authorize another checkpoint or a failed gate."""
 import json
 from pathlib import Path
 import sys
@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "training"))
 from common import ROOT, checkpoint_physics
 
 checkpoint = ROOT / "training/checkpoints/insane/final.zip"
-validation = ROOT / "validation/difficulty.json"
+validation = ROOT / "validation/difficulty-touch-motor.json"
 checkpoint_physics(checkpoint, validation)
 with tempfile.TemporaryDirectory(dir=ROOT / "training/runs") as directory:
     directory = Path(directory)

@@ -5,7 +5,7 @@ const TABLE = preload("res://scripts/table.gd")
 const LEVELS = ["Easy", "Medium", "Hard", "Insane"]
 const TINTS = [Color("ffbd73"), Color("65d3e5"), Color("e99cbe"), Color("b2d789")]
 const PUCK_TINTS = [Color("eaf8ff"), Color("ffbd73"), Color("e99cbe"), Color("b2d789")]
-const DRAG_RESPONSE = 30.0
+const DRAG_RESPONSE = 60.0
 var arena: Node2D
 var arena_view: SubViewport
 var arena_sprite: Sprite2D
@@ -37,7 +37,7 @@ var touch_id := -1
 var drag_target := Vector2.ZERO
 var drag_offset := Vector2.ZERO
 var level := 1
-var settings := {"table": 0, "puck": 0, "human": 0, "bot": 1, "sound": false, "haptics": true, "reduced_effects": false, "offset": 0.0, "level": 1, "settings_version": 1}
+var settings := {"table": 0, "puck": 0, "human": 0, "bot": 1, "sound": false, "haptics": true, "reduced_effects": false, "offset": 60.0, "level": 1, "settings_version": 1}
 var actor: RefCounted
 var history: RefCounted
 var model_error := ""
@@ -412,9 +412,20 @@ func _settings_menu() -> void:
 	_clear_panel("Settings", "")
 	for entry in [["Sound", "sound"], ["Haptics", "haptics"], ["Reduced effects", "reduced_effects"]]:
 		_toggle(entry[0], entry[1])
-	var offset_label := _label("Touch offset · %d" % settings.offset, 24)
+	var offset_label := _label("Paddle above finger · %d" % settings.offset, 24)
 	offset_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	content.add_child(offset_label)
+	var preview := Control.new()
+	preview.custom_minimum_size.y = 140
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	preview.draw.connect(func():
+		var finger := Vector2(preview.size.x / 2, 102)
+		var paddle := finger - Vector2(0, float(settings.offset) * 0.7)
+		preview.draw_circle(paddle, arena.CONFIG.paddle_radius * 0.7, TINTS[settings.human])
+		preview.draw_circle(finger, 10, Color("e3edf1"))
+		preview.draw_arc(finger, 14, 0, TAU, 32, Color("91abb9"), 2, true))
+	content.add_child(preview)
+	content.add_child(_label("Raise the paddle to keep it clear of your finger.", 18))
 	var offset := HSlider.new()
 	offset.max_value = 100
 	offset.step = 10
@@ -422,7 +433,8 @@ func _settings_menu() -> void:
 	offset.custom_minimum_size.y = 82
 	offset.value_changed.connect(func(value):
 		settings.offset = value
-		offset_label.text = "Touch offset · %d" % value
+		offset_label.text = "Paddle above finger · %d" % value
+		preview.queue_redraw()
 		_save_settings())
 	content.add_child(offset)
 	if not storage_ok:
@@ -680,7 +692,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _grab(point: Vector2, id: int) -> void:
 	var local: Vector2 = screen_to_table(point)
-	if Rect2(0, 500, 600, 500).has_point(local):
+	# With visibility offset, the finger can sit below the court at the back rail.
+	var offset: float = settings.offset if id >= 0 else 0.0
+	if Rect2(0, 500, 600, 500 + offset).has_point(local):
 		touch_id = id
 		drag_offset = arena.paddles[0].position - local if id == -2 else Vector2.ZERO
 		_drag(point)
@@ -691,8 +705,8 @@ func _drag(point: Vector2) -> void:
 	_drive_player()
 
 func _drive_player() -> void:
-	# Track the finger sooner; the shared motor still caps speed and acceleration.
-	arena.paddles[0].set_command((drag_target - arena.paddles[0].position) * DRAG_RESPONSE / arena.CONFIG.paddle_speed)
+	# Preserve diagonal aim before the shared motor clamps individual action axes.
+	arena.paddles[0].set_command(((drag_target - arena.paddles[0].position) * DRAG_RESPONSE / arena.CONFIG.paddle_speed).limit_length(1))
 
 func _notification(what: int) -> void:
 	if what in [NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED]:

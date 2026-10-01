@@ -30,7 +30,13 @@ func set_command(value: Vector2) -> void:
 		command = Vector2.ZERO
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
-	state.linear_velocity = state.linear_velocity.move_toward(command * CONFIG.paddle_speed,
+	# Stop commanding motion into a rail; collisions still resolve through the solver.
+	var arena := get_parent()
+	var local_point: Vector2 = arena.to_local(state.transform.origin)
+	var side := 0 if collision_layer == 2 else 1
+	var target: Vector2 = arena.clamp_target(local_point + command * CONFIG.paddle_speed * state.step, side)
+	var desired_velocity := ((target - local_point) / state.step).limit_length(CONFIG.paddle_speed)
+	state.linear_velocity = state.linear_velocity.move_toward(desired_velocity,
 		CONFIG.paddle_acceleration * state.step).limit_length(CONFIG.paddle_speed)
 
 func reset_at(point: Vector2) -> void:

@@ -15,7 +15,7 @@ def physics_hash():
 
 
 def checkpoint_physics(checkpoint, validation=None):
-    """Keep original training provenance; rule-only compatibility needs a passed tournament."""
+    """Keep original training provenance; runtime compatibility needs a passed tournament."""
     checkpoint = Path(checkpoint)
     if not checkpoint.exists():
         checkpoint = checkpoint.with_suffix(".zip")

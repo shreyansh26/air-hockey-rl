@@ -1,5 +1,12 @@
 # Bot quality: diagnosis, rewards, and rollout design
 
+The results below describe the previously accepted runtime. The
+[0.1.4 touch candidate](../validation/touch-response-0.1.4.md) changes the shared
+motor and has separate evidence: difficulty ordering passes, but two
+strong-interceptor matches time out even with a 30-minute simulation limit.
+It has not inherited this report's full qualification.
+
+
 The matched probes and tournament below use the corrected goal rules, physics
 hash `a4aeb4eb…`. All four selected checkpoints retain their original training
 hash `924926ef…`; their exact weights have been requalified under the new rules.

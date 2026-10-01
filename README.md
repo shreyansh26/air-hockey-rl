@@ -4,7 +4,10 @@ A portrait Godot air-hockey game for the web and native Android. First to seven,
 finger-follow touch or keyboard input, pause/rematch, three table finishes, independent puck
 and paddle colors, local settings, offline assets, and small local PPO actors.
 
-Version 0.1.3 centers the scoreboard over the court and fills the launcher icon
+Playtest candidate 0.1.4-candidate improves fast finger reversals with a bounded, quicker shared
+paddle motor, direction-preserving diagonal input, and a live touch-offset
+preview. Offset touches can start below the court to reach the back rail.
+The scoreboard is centered over the court and the launcher icon is filled
 with blue artwork, removing its dark padding. Scores, difficulty and a pause
 icon sit in a safe-area header
 above the proportional court. A finish-colored background fills the screen
@@ -20,7 +23,7 @@ Sound starts off and can be enabled in Settings or Pause. Existing installs
 are muted once when upgrading; subsequent explicit choices are remembered.
 
 Implementation/evidence: [validation/STATUS.md](validation/STATUS.md), with the
-latest UI and input checks in [the 0.1.2 report](validation/mobile-ui-0.1.2.md). Model
+latest input checks in [the 0.1.4 report](validation/touch-response-0.1.4.md). Model
 labels are not skill certificates: measured quality gates are recorded there.
 The original bots failed their quality gates. The new actor bundle and the
 reward, rollout, and trajectory analysis are in [docs/bot-quality.md](docs/bot-quality.md).
@@ -75,17 +78,22 @@ evaluate the shipped actors and resume training. The bootstrap teacher is
 confined to training; gameplay always uses the selected neural actor.
 
 The selected checkpoints retain the original training physics hash. Their
-exact weights passed a fresh full tournament after the angled-goal correction.
+exact weights passed a fresh full tournament after the angled-goal correction;
+the new motor passes difficulty ordering, but two strong-baseline matches
+time out even at 30 simulation minutes. Its full qualification remains failed;
+export/resume compatibility approval is intentionally blocked.
 Re-export them with the explicit compatibility report:
 
 ```sh
-uv run --project training python training/export_policy.py --checkpoint training/checkpoints/insane/final.zip --output models/insane --level insane --delay 10 --physics-validation validation/difficulty.json
+uv run --project training python training/export_policy.py --checkpoint training/checkpoints/insane/final.zip --output models/insane --level insane --delay 10 --physics-validation validation/difficulty-touch-motor.json
 uv run --project training python checks/checkpoint_physics_check.py
 ```
 
 Resume instructions in the checkpoint directory use the same report. New
-training runs record the corrected Arena hash. Collision geometry, masses,
-speeds, damping, motor controls and observation encoding did not change.
+training runs record the current Arena hash. Collision geometry, masses,
+speed limits, damping and observation encoding remain unchanged. The shared
+motor now accelerates at 40,000 table units/s² and stops requesting motion into
+the rails.
 
 ```sh
 uv run --project training python training/parity.py

@@ -65,6 +65,47 @@ func tracking_trial(legacy: bool) -> Dictionary:
 	main.set_physics_process(true)
 	return {"mean_lag_units": lag, "peak_speed": peak_speed, "settling_error": settling_error}
 
+func zigzag_trial(diagonal: bool) -> Dictionary:
+	main._begin_serve(20.0)
+	main.set_physics_process(false)
+	var paddle = main.arena.paddles[0]
+	paddle.reset_at(Vector2(240, 820))
+	await ticks(2)
+	touch(Vector2(240, 820), 10)
+	var lag := 0.0
+	var peak_error := 0.0
+	var peak_speed := 0.0
+	var peak_acceleration := 0.0
+	var target := Vector2.ZERO
+	for step in range(240):
+		# One held finger, 60 Hz samples, reversing every 200 ms at 600 units/s.
+		var phase := (step - step % 2) % 48
+		var travel := float(mini(phase, 48 - phase)) * 5
+		target = Vector2(240 + travel, 820 - travel * 0.5 if diagonal else 820)
+		if step % 2 == 0:
+			drag(target, 10)
+		main._drive_player()
+		var velocity: Vector2 = paddle.linear_velocity
+		await physics_frame
+		peak_acceleration = maxf(peak_acceleration, paddle.linear_velocity.distance_to(velocity) * 120)
+		peak_speed = maxf(peak_speed, paddle.linear_velocity.length())
+		if step >= 48:
+			var error: float = target.distance_to(paddle.position)
+			lag += error / 192
+			peak_error = maxf(peak_error, error)
+	var settled_tick := 0
+	for step in range(60):
+		# No drag events once the finger stops: the normal physics path must settle.
+		main._drive_player()
+		await physics_frame
+		if settled_tick == 0 and target.distance_to(paddle.position) < 1 and paddle.linear_velocity.length() < 5:
+			settled_tick = step + 1
+	var result := {"mean_error": lag, "peak_error": peak_error, "peak_speed": peak_speed,
+		"peak_acceleration": peak_acceleration, "settled_tick": settled_tick, "settling_error": target.distance_to(paddle.position)}
+	touch(target, 10, false)
+	main.set_physics_process(true)
+	return result
+
 func run() -> void:
 	main = load("res://scenes/main.tscn").instantiate()
 	root.add_child(main)
@@ -99,7 +140,13 @@ func run() -> void:
 	touch(Vector2(350, 880), 5)
 	check(main.drag_target.is_equal_approx(Vector2(350, 840)), "configured touch offset remains available")
 	touch(Vector2(350, 880), 5, false)
+	main.settings.offset = 60.0
+	touch(Vector2(300, 1010), 5)
+	check(main.touch_id == 5 and main.drag_target.is_equal_approx(Vector2(300, 950)), "offset permits a grab below the court to reach the back rail")
+	touch(Vector2(300, 1010), 5, false)
 	main.settings.offset = 0.0
+	touch(Vector2(300, 1010), 5)
+	check(main.touch_id == -1, "without offset, touches outside the court do not grab")
 	await wait_for_state("rally", 180)
 	touch(Vector2(320, 820), 6)
 	main.arena.set_running(false)
@@ -153,5 +200,15 @@ func run() -> void:
 	check(current.peak_speed <= main.arena.CONFIG.paddle_speed + 0.01, "faster response retains the shared motor speed cap")
 	check(current.settling_error < 2, "paddle settles on a stationary finger without drifting")
 	check(not Input.use_accumulated_input, "drag events are not held until a rendered frame")
-	print(JSON.stringify({"check": "touch_serve", "failures": failures, "tracking": {"legacy": legacy, "current": current}}))
+	var zigzags := []
+	for diagonal in [false, true]:
+		var after := await zigzag_trial(diagonal)
+		check(after.mean_error < 12, "fast zigzags keep mean error below 12 table units")
+		check(after.peak_error < 30, "fast zigzags stay within one paddle radius")
+		check(after.peak_speed <= main.arena.CONFIG.paddle_speed + 0.01, "zigzags retain the speed cap")
+		check(after.peak_acceleration <= main.arena.CONFIG.paddle_acceleration + 1, "zigzags retain finite bounded acceleration")
+		check(after.settled_tick > 0 and after.settled_tick <= 15, "stopping finger settles within 125 ms")
+		check(after.settling_error < 1, "held finger settles without more input events")
+		zigzags.append({"diagonal": diagonal, "after": after})
+	print(JSON.stringify({"zigzags": zigzags, "check": "touch_serve", "failures": failures, "tracking": {"legacy": legacy, "current": current}}))
 	quit(0 if failures.is_empty() else 1)
