@@ -40,6 +40,7 @@ var last_sample_tick := 0
 var last_decision_tick := -1
 var particles: Array[Dictionary] = []
 var panel_mode := "menu"
+var browser_callbacks := []
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -82,6 +83,11 @@ func _ready() -> void:
 		var qa = load("res://checks/runtime_check.gd").new()
 		add_child(qa)
 		qa.initialize(self)
+	if OS.has_feature("web"):
+		var pause_callback = JavaScriptBridge.create_callback(func(_args): _pause())
+		browser_callbacks.append(pause_callback)
+		JavaScriptBridge.get_interface("window").addEventListener("blur", pause_callback)
+		JavaScriptBridge.get_interface("document").addEventListener("visibilitychange", pause_callback)
 
 func _build_theme() -> void:
 	theme = Theme.new()

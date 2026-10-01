@@ -139,5 +139,5 @@
       "checkpoint": "training/runs/full-remote/final.zip"
     }
   },
-  "quality": "candidate; qualification pending"
+  "quality": "failed initial tournament; see validation/difficulty-before.json and docs/bot-quality.md"
 }

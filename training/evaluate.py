@@ -24,13 +24,15 @@ def wilson(wins, count):
     return [centre - half, centre + half]
 
 
-def matchup(bundle, bottom, top, count, args, seed):
+def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
     env = make_env(arenas=args.arenas, processes=args.processes, seed=seed,
                    delay=bundle["levels"][bottom]["delay_ticks"], log_dir=ROOT / "training/runs/evaluation")
     learner = PPO.load(bundle["levels"][bottom]["checkpoint"], device="cpu")
-    opponents = [] if top == "intercept" else [str(ROOT / f"models/{top}/actor.json")]
+    scripted = top in ["intercept", "delayed_chase", "center", "chase"]
+    opponents = [] if scripted else [str(ROOT / f"models/{top}/actor.json")]
     env.env_method("configure", mode="rally", hit_reward=0, shaping=0, limit_ticks=36000,
-                   opponent_mode="fixed", opponent_style="intercept", opponents=opponents, evaluation_match=True)
+                   opponent_mode="fixed", opponent_style=top if scripted else "intercept", opponent_delay=args.opponent_delay,
+                   opponents=opponents, evaluation_match=True, learner_side=learner_side, drill_bonus=0)
     scores = np.zeros((env.num_envs, 2), int)
     durations = np.zeros(env.num_envs, int)
     wins, losses, censored, stalls, points, hits = 0, 0, 0, 0, 0, 0
@@ -46,6 +48,7 @@ def matchup(bundle, bottom, top, count, args, seed):
             obs, rewards, dones, infos = env.step(actions)
             durations[active] += 1
             steps += 1
+            restart = []
             if steps % 30 == 0 and len(replays) < 200:
                 replays.append({"decision": steps, "observation": obs[0].tolist(), "action": actions[0].tolist(), "scores": scores[0].tolist()})
             for i in np.flatnonzero(active):
@@ -70,12 +73,17 @@ def matchup(bundle, bottom, top, count, args, seed):
                     durations[i] = 0
                     if assigned < count:
                         assigned += 1
+                        if timed_out and not finished:
+                            restart.append(i)
                     else:
                         active[i] = False
+            for index, observation in env.venv.restart_matches(restart).items():
+                obs[index] = observation
         return {"bottom": bottom, "top": top, "seed": seed, "requested_matches": count, "wins": wins, "losses": losses,
                 "censored": censored, "win_rate": wins / max(1, wins + losses), "wilson_95": wilson(wins, wins + losses),
                 "mean_score_difference": float(np.mean(score_differences)) if score_differences else None,
                 "mean_match_seconds": float(np.mean(lengths)) / 30, "stalls": stalls, "points": points, "paddle_hits": hits,
+                "learner_side": learner_side, "opponent_delay_ticks": args.opponent_delay if top == "delayed_chase" else 0,
                 "wall_seconds": time.perf_counter() - started, "replay": replays}
     finally:
         env.close()
@@ -86,7 +94,7 @@ def main(args):
     bundle = json.loads(Path(args.manifest).read_text())
     reports, gates = [], {}
     levels = ["easy", "medium", "hard", "insane"]
-    for i, (weaker, stronger) in enumerate(zip(levels, levels[1:])):
+    for i, (weaker, stronger) in enumerate([] if args.baseline_only else zip(levels, levels[1:])):
         pair = []
         for bottom, top in [(stronger, weaker), (weaker, stronger)]:
             report = matchup(bundle, bottom, top, args.matches // 2, args, 910000 + i * 10000)
@@ -99,14 +107,21 @@ def main(args):
         gates[f"{stronger}>{weaker}"] = {"wins": wins, "completed": total, "requested": args.matches,
             "win_rate": wins / max(1, total), "wilson_95": interval,
             "passed": args.matches >= 400 and total == args.matches and wins / max(1, total) > 0.55 and interval[0] > 0.5}
-    baseline = matchup(bundle, "insane", "intercept", args.matches, args, 990001)
-    reports.append(baseline)
-    gates["insane_vs_strong_baseline"] = {"win_rate": baseline["win_rate"], "wilson_95": baseline["wilson_95"],
-                                           "passed": baseline["censored"] == 0 and baseline["win_rate"] >= 0.8}
+    for style in args.baselines:
+        pair = [matchup(bundle, "insane", style, args.matches // 2, args, 990001, side) for side in [0, 1]]
+        reports.extend(pair)
+        wins = sum(p["wins"] for p in pair)
+        total = sum(p["wins"] + p["losses"] for p in pair)
+        key = "insane_vs_strong_baseline" if style == "intercept" else "insane_vs_" + style
+        gates[key] = {"wins": wins, "completed": total, "requested": args.matches, "win_rate": wins / max(1, total),
+                      "wilson_95": wilson(wins, total), "passed": args.matches >= 400 and total == args.matches and wins / max(1, total) >= 0.8}
+        print(json.dumps({key: gates[key]}), flush=True)
     evidence = {"physics_hash": bundle["physics_hash"], "model_hashes": {level: bundle["levels"][level]["weights_sha256"] for level in levels},
                 "matches_per_pair": args.matches, "max_match_seconds": args.max_decisions / 30, "gates": gates,
-                "qualified": all(gate["passed"] for gate in gates.values()), "human_playtests": "unverified", "matchups": reports}
-    destination = ROOT / "validation/difficulty.json"
+                "scope": "baseline-only" if args.baseline_only else "full-difficulty-tournament",
+                "qualified": not args.baseline_only and all(gate["passed"] for gate in gates.values()), "human_playtests": "unverified", "matchups": reports}
+    destination = Path(args.output)
+    destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(evidence, indent=2) + "\n")
     print(json.dumps(gates, indent=2))
 
@@ -118,4 +133,8 @@ if __name__ == "__main__":
     parser.add_argument("--arenas", type=int, default=16)
     parser.add_argument("--processes", type=int, default=1)
     parser.add_argument("--max-decisions", type=int, default=9000)
+    parser.add_argument("--baselines", nargs="+", choices=["intercept", "delayed_chase", "chase", "center"], default=["intercept"])
+    parser.add_argument("--opponent-delay", type=int, default=22)
+    parser.add_argument("--baseline-only", action="store_true")
+    parser.add_argument("--output", default=str(ROOT / "validation/difficulty.json"))
     main(parser.parse_args())

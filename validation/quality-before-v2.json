@@ -1,0 +1,32 @@
+{
+  "scenario_version": 2,
+  "checkpoint": "training/runs/full/final.zip",
+  "checkpoint_sha256": "6948450ca5e0234d456c8497a2b83840306d536219368eb12aa23b580ceb2531",
+  "teacher": false,
+  "delay_ticks": 10,
+  "physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
+  "defense": {
+    "episodes": 200,
+    "episodes_with_puck_contact": 95,
+    "contact_rate": 0.475,
+    "scored": 46,
+    "conceded": 119,
+    "timeouts_or_stalls": 35,
+    "mean_seconds": 8.314166666666667,
+    "near_boundary_fraction": 0.76627236346516,
+    "wall_seconds": 6.920289590023458,
+    "trajectory_file": "validation/replays/quality-before-v2-defense.json"
+  },
+  "rally": {
+    "episodes": 200,
+    "episodes_with_puck_contact": 165,
+    "contact_rate": 0.825,
+    "scored": 28,
+    "conceded": 169,
+    "timeouts_or_stalls": 3,
+    "mean_seconds": 5.334791666666666,
+    "near_boundary_fraction": 0.6873201956271576,
+    "wall_seconds": 5.592657115019392,
+    "trajectory_file": "validation/replays/quality-before-v2-rally.json"
+  }
+}

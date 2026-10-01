@@ -149,11 +149,19 @@ func _handle(message: Dictionary) -> void:
 		"configure":
 			for controller in controllers:
 				controller.mode = str(message.get("mode", controller.mode))
+				controller.learner_side = clampi(int(message.get("learner_side", controller.learner_side)), 0, 1)
+				if controller.learner_side == 1 and controller.mode != "rally":
+					fail("Top-side evaluation requires normal rallies")
+					return
 				controller.limit_ticks = clampi(int(message.get("limit_ticks", controller.limit_ticks)), 4, 36000)
 				controller.shaping = clampf(float(message.get("shaping", controller.shaping)), 0, 0.1)
+				controller.gamma = clampf(float(message.get("gamma", controller.gamma)), 0.9, 0.9999)
 				controller.hit_reward = clampf(float(message.get("hit_reward", controller.hit_reward)), 0, 0.1)
+				controller.drill_bonus = clampf(float(message.get("drill_bonus", controller.drill_bonus)), 0, 0.3)
+				controller.potential = controller._potential()
 				controller.opponent_mode = str(message.get("opponent_mode", controller.opponent_mode))
 				controller.fixed_style = str(message.get("opponent_style", controller.fixed_style))
+				controller.opponent_delay = clampi(int(message.get("opponent_delay", controller.opponent_delay)), 0, 40)
 				controller.evaluation_match = bool(message.get("evaluation_match", controller.evaluation_match))
 				if message.has("opponents"):
 					controller.opponents.assign(message.opponents)
@@ -161,10 +169,26 @@ func _handle(message: Dictionary) -> void:
 				for i in range(controllers.size()):
 					controllers[i].rng.state = int(message.rng_states[i])
 			_send({"type": "configured"})
+		"restart_matches":
+			var indices = message.get("indices", [])
+			if not indices is Array or indices.size() > controllers.size():
+				fail("Invalid match reset indices")
+				return
+			var obs := []
+			for index in indices:
+				if not (index is int or index is float) or index < 0 or index >= controllers.size():
+					fail("Invalid match reset index")
+					return
+				var controller := controllers[int(index)]
+				controller.match_scores = [0, 0]
+				controller.next_serve = -1
+				controller.reset_episode()
+				obs.append({"obs": Array(controller.observation())})
+			_send({"type": "restarted", "obs": obs})
 		"inspect":
 			var states := []
 			for controller in controllers:
-				states.append({"ticks": controller.arena.ticks, "rng_state": str(controller.rng.state), "integration_ticks": controller.arena.puck.integration_ticks, "episode_ticks": controller.episode_ticks, "puck": [controller.arena.puck.position.x, controller.arena.puck.position.y], "velocity": [controller.arena.puck.linear_velocity.x, controller.arena.puck.linear_velocity.y], "world": str(controller.arena.get_world_2d().get_instance_id())})
+				states.append({"ticks": controller.arena.ticks, "rng_state": str(controller.rng.state), "integration_ticks": controller.arena.puck.integration_ticks, "episode_ticks": controller.episode_ticks, "puck": [controller.arena.puck.position.x, controller.arena.puck.position.y], "velocity": [controller.arena.puck.linear_velocity.x, controller.arena.puck.linear_velocity.y], "paddle": [controller.arena.paddles[controller.learner_side].position.x, controller.arena.paddles[controller.learner_side].position.y], "opponent": [controller.arena.paddles[1 - controller.learner_side].position.x, controller.arena.paddles[1 - controller.learner_side].position.y], "contacts": controller.arena.contacts, "match_scores": controller.match_scores, "world": str(controller.arena.get_world_2d().get_instance_id())})
 			_send({"type": "inspect", "states": states})
 		"fixture":
 			var index := clampi(int(message.get("index", 0)), 0, controllers.size() - 1)
@@ -172,12 +196,18 @@ func _handle(message: Dictionary) -> void:
 			controller.reset_episode()
 			controller.arena.paddles[0].reset_at(Vector2(80, 930))
 			controller.arena.paddles[1].reset_at(Vector2(80, 70))
-			if message.get("case") == "goal":
+			if message.get("case") == "return":
+				controller.arena.paddles[0].reset_at(Vector2(300, 850))
+				controller.arena.puck.reset_at(Vector2(300, 740), Vector2(0, 300))
+			elif message.get("case") == "bottom_goal":
+				controller.arena.puck.reset_at(Vector2(300, 1000), Vector2(0, 2300))
+			elif message.get("case") == "goal":
 				controller.arena.puck.reset_at(Vector2(300, 0), Vector2(0, -2300))
 			else:
 				controller.arena.puck.reset_at(Vector2(300, 500), Vector2(120, 0))
 			controller.arena.last_position = controller.arena.puck.position
-			controller.history.reset(controller.arena, 0)
+			controller.history.reset(controller.arena, controller.learner_side)
+			controller.opponent_history.reset(controller.arena, 1 - controller.learner_side)
 			_send({"type": "fixture"})
 		"close":
 			stream.disconnect_from_host()
@@ -195,7 +225,7 @@ func _reply_step() -> void:
 	var truncated := []
 	var infos := []
 	for controller in controllers:
-		var info := {"physics_ticks": controller.episode_ticks, "hits": controller.arena.contacts[0], "winner": controller.winner, "stalls": controller.stalls}
+		var info := {"physics_ticks": controller.episode_ticks, "hits": controller.arena.contacts[controller.learner_side], "winner": controller.winner, "stalls": controller.stalls, "drill_success": controller.drill_success, "shot_type": controller.shot_type, "mode": controller.active_mode, "opponent_style": "actor" if controller.opponent else controller.opponent_style}
 		var final_obs := Array(controller.observation())
 		rewards.append(controller.finish_step())
 		terminated.append(controller.terminated)

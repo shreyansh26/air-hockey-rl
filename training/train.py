@@ -37,9 +37,9 @@ class Progress(BaseCallback):
         self.rollout_started = now
         progress = self.model.num_timesteps
         stage = next((stage for stage in self.config["curriculum"] if progress < stage["until"]), self.config["curriculum"][-1])
-        if self.phase != stage["mode"]:
-            self.training_env.env_method("configure", mode=stage["mode"], hit_reward=stage.get("hit_reward", 0), shaping=stage.get("shaping", 0))
-            self.phase = stage["mode"]
+        if self.phase != stage:
+            self.training_env.env_method("configure", mode=stage["mode"], hit_reward=stage.get("hit_reward", 0), shaping=stage.get("shaping", 0), drill_bonus=stage.get("drill_bonus", 0), gamma=self.config["ppo"]["gamma"])
+            self.phase = stage.copy()
         if progress >= self.next_freeze:
             checkpoint = self.output / f"frozen-{progress}.zip"
             self.model.save(checkpoint)
@@ -54,29 +54,31 @@ class Progress(BaseCallback):
     def _on_rollout_end(self):
         self.last_end = time.perf_counter()
         row = {"transitions": self.model.num_timesteps, "rollout_seconds": self.last_end - self.rollout_started,
-               "ppo_update_seconds": self.update_seconds, "phase": self.phase,
+               "ppo_update_seconds": self.update_seconds, "phase": self.phase["mode"], "reward_config": self.phase,
                "elapsed_seconds": self.last_end - self.started,
                "mean_episode_reward": float(np.mean([e["r"] for e in self.model.ep_info_buffer])) if self.model.ep_info_buffer else None}
         self.rows.append(row)
         (self.output / "timings.json").write_text(json.dumps(self.rows, indent=2) + "\n")
 
 
-def train(config, resume=None):
+def train(config, resume=None, warm_start=None):
+    if resume and warm_start:
+        raise ValueError("Choose optimizer-preserving resume or a fresh warm start")
     torch.set_num_threads(config.get("torch_threads", 1))
     output = ROOT / config["output"]
     output.mkdir(parents=True, exist_ok=True)
-    (output / "config.json").write_text(json.dumps({**config, "physics_hash": physics_hash()}, indent=2) + "\n")
+    (output / "config.json").write_text(json.dumps({**config, "physics_hash": physics_hash(), "warm_start": warm_start, "resume": resume}, indent=2) + "\n")
     env = make_env(arenas=config["arenas"], processes=config.get("processes", 1), seed=config["seed"], delay=config["delay_ticks"], log_dir=output)
     evaluation = None
     model = None
     progress = Progress(output, config)
     try:
-        policy_kwargs = {"net_arch": {"pi": [64, 64], "vf": [64, 64]}, "activation_fn": torch.nn.Tanh}
+        policy_kwargs = {"net_arch": {"pi": [64, 64], "vf": [64, 64]}, "activation_fn": torch.nn.Tanh, "log_std_init": config.get("log_std_init", 0)}
         if resume:
             old_config = Path(resume).parent / "config.json"
             if old_config.exists() and json.loads(old_config.read_text()).get("physics_hash") != physics_hash():
                 raise ValueError("Resume checkpoint uses different physics; retrain instead")
-            model = PPO.load(resume, env=env, device=config.get("device", "cpu"))
+            model = PPO.load(resume, env=env, device=config.get("device", "cpu"), **config["ppo"])
             rng_path = Path(resume).parent / "rng.pt"
             if rng_path.exists():
                 state = torch.load(rng_path, weights_only=False)
@@ -92,6 +94,15 @@ def train(config, resume=None):
         else:
             model = PPO("MlpPolicy", env, device=config.get("device", "cpu"), seed=config["seed"], policy_kwargs=policy_kwargs,
                         verbose=1, **config["ppo"])
+            if warm_start:
+                old_config = Path(warm_start).parent / "config.json"
+                if not old_config.exists() or json.loads(old_config.read_text()).get("physics_hash") != physics_hash():
+                    raise ValueError("Warm-start checkpoint needs matching recorded physics")
+                source = PPO.load(warm_start, device="cpu")
+                copied = {key: value for key, value in source.policy.state_dict().items() if key != "log_std"}
+                missing, unexpected = model.policy.load_state_dict(copied, strict=False)
+                assert missing == ["log_std"] and not unexpected
+                model.set_random_seed(config["seed"])
         model.set_logger(configure(str(output), ["stdout", "csv", "tensorboard"]))
         total_envs = env.num_envs
         callbacks = [progress, CheckpointCallback(save_freq=max(1, config.get("checkpoint_every", 50000) // total_envs), save_path=str(output), name_prefix="ppo")]
@@ -134,6 +145,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
     parser.add_argument("--resume")
+    parser.add_argument("--warm-start", help="Copy actor/critic weights into a fresh stock PPO optimizer/exploration distribution")
     parser.add_argument("--seed", type=int)
     parser.add_argument("--delay", type=int)
     parser.add_argument("--output")
@@ -142,4 +154,4 @@ if __name__ == "__main__":
     for key, value in [("seed", args.seed), ("delay_ticks", args.delay), ("output", args.output)]:
         if value is not None:
             config[key] = value
-    train(config, args.resume)
+    train(config, args.resume, args.warm_start)

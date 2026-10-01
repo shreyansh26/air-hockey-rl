@@ -1,0 +1,32 @@
+{
+  "checkpoint": "training/runs/full-remote/final.zip",
+  "teacher": false,
+  "delay_ticks": 10,
+  "physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
+  "defense": {
+    "episodes": 200,
+    "episodes_with_puck_contact": 107,
+    "contact_rate": 0.535,
+    "scored": 29,
+    "conceded": 102,
+    "timeouts_or_stalls": 69,
+    "mean_seconds": 13.487666666666666,
+    "near_boundary_fraction": 0.8107392745350764,
+    "wall_seconds": 100.45592645800207
+  },
+  "rally": {
+    "episodes": 200,
+    "episodes_with_puck_contact": 161,
+    "contact_rate": 0.805,
+    "scored": 29,
+    "conceded": 146,
+    "timeouts_or_stalls": 25,
+    "mean_seconds": 8.590666666666667,
+    "near_boundary_fraction": 0.7234460628785694,
+    "wall_seconds": 46.36401074999594
+  },
+  "scenario_version": 1,
+  "scenario_source_revision": "ae5c5da",
+  "scenario": "original direct-shot panel, vx in [-600,600], vy in [500,1000], no drill assistance",
+  "checkpoint_sha256": "6948450ca5e0234d456c8497a2b83840306d536219368eb12aa23b580ceb2531"
+}

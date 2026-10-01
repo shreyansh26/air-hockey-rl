@@ -204,6 +204,27 @@ class HockeyVecEnv(VecEnv):
     def env_is_wrapped(self, wrapper_class, indices=None):
         return [False for _ in self._get_indices(indices)]
 
+    def restart_matches(self, indices):
+        """Evaluation-only: reset censored matches without touching other worlds."""
+        selected = list(dict.fromkeys(int(i) for i in indices))
+        if any(i < 0 or i >= self.num_envs for i in selected):
+            raise IndexError("Invalid match index")
+        reset = {}
+        width = self.client.num_envs
+        for batch, client in enumerate(self.clients):
+            local = [i - batch * width for i in selected if i // width == batch]
+            if not local:
+                continue
+            reply = client.command("restart_matches", indices=local)
+            if reply.get("type") != "restarted" or len(reply["obs"]) != len(local):
+                raise ValueError("Invalid match reset reply")
+            for i, observation in zip(local, reply["obs"]):
+                array = np.asarray(observation["obs"], np.float32)
+                if array.shape != (52,) or not np.isfinite(array).all():
+                    raise ValueError("Invalid match reset observation")
+                reset[batch * width + i] = array
+        return reset
+
 
 def make_env(**kwargs):
     # SB3's own wrapper also extracts terminal observations correctly.

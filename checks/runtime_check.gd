@@ -7,6 +7,12 @@ var elapsed := 0.0
 var autoplay := false
 var soak_started := 0
 var soak_matches := 0
+var soak_active_seconds := 0.0
+var soak_complete := false
+var soak_stalls := 0
+var soak_invalid_states := 0
+var soak_physics_ticks := 0
+var previous_tick := -1
 var physics_report := {}
 var parity_report := {}
 var memory_samples := []
@@ -20,24 +26,35 @@ func initialize(value: Control) -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	process_physics_priority = 300
 	browser = OS.has_feature("web")
+	main.arena.stalled.connect(func():
+		if soak_started > 0:
+			soak_stalls += 1
+			if not main.arena.puck.position.is_finite() or not main.arena.puck.linear_velocity.is_finite():
+				soak_invalid_states += 1)
 	if browser:
 		JavaScriptBridge.eval("""(() => { let p=document.createElement('details');p.id='qa-panel';p.style='position:fixed;bottom:0;left:0;z-index:9999;background:#071621;color:white;font:12px monospace;max-width:100vw';p.innerHTML='<summary>QA</summary><input aria-label="QA command" id="qa-command" style="width:400px"><pre id="qa-state" style="max-height:100px;overflow:auto"></pre>';document.body.append(p) })()""")
 
 func _physics_process(_delta: float) -> void:
 	if autoplay and main.state == "rally":
 		main.arena.baseline(0, "intercept")
+		var tick: int = main.arena.puck.integration_ticks
+		soak_physics_ticks += tick if previous_tick < 0 or tick < previous_tick else tick - previous_tick
+		previous_tick = tick
 
 func _process(delta: float) -> void:
 	if soak_started > 0:
-		frame_samples.append(delta * 1000)
+		if main.state in ["rally", "countdown", "goal"]:
+			soak_active_seconds += delta
+			frame_samples.append(delta * 1000)
 		if Time.get_ticks_msec() - last_memory >= 30000:
 			last_memory = Time.get_ticks_msec()
 			memory_samples.append({"seconds": (last_memory - soak_started) / 1000.0, "bytes": Performance.get_monitor(Performance.MEMORY_STATIC)})
 		if main.state == "results":
 			soak_matches += 1
 			main._start_match()
-		if Time.get_ticks_msec() - soak_started >= 1200000:
+		if soak_active_seconds >= 1200:
 			autoplay = false
+			soak_complete = true
 			main._pause()
 			_write_report()
 			soak_started = 0
@@ -61,9 +78,11 @@ func _process(delta: float) -> void:
 	if browser:
 		JavaScriptBridge.eval("document.getElementById('qa-state').textContent=" + JSON.stringify(json))
 	else:
-		var file := FileAccess.open("user://qa-state.json", FileAccess.WRITE)
+		var file := FileAccess.open("user://qa-state.tmp", FileAccess.WRITE)
 		if file:
 			file.store_string(json)
+			file.close()
+			DirAccess.rename_absolute("user://qa-state.tmp", "user://qa-state.json")
 
 func _command(command: Dictionary) -> void:
 	match command.get("type", ""):
@@ -89,6 +108,12 @@ func _command(command: Dictionary) -> void:
 			memory_samples = []
 			frame_samples.clear()
 			soak_matches = 0
+			soak_active_seconds = 0
+			soak_complete = false
+			soak_stalls = 0
+			soak_invalid_states = 0
+			soak_physics_ticks = 0
+			previous_tick = -1
 			main._start_match()
 		"stop":
 			autoplay = false
@@ -134,8 +159,10 @@ func snapshot() -> Dictionary:
 		"origin": [main.table_origin.x, main.table_origin.y], "scale": main.table_scale,
 		"viewport": [main.size.x, main.size.y], "actor_ms_p95": percentile(main.actor_times, 0.95),
 		"frame_ms_p50": percentile(main.frames, 0.5), "frame_ms_p95": percentile(main.frames, 0.95),
-		"frame_ms_p99": percentile(main.frames, 0.99), "soak_seconds": (Time.get_ticks_msec() - soak_started) / 1000.0 if soak_started else 0,
-		"soak_matches": soak_matches}
+		"frame_ms_p99": percentile(main.frames, 0.99), "soak_seconds": soak_active_seconds,
+		"soak_wall_seconds": (Time.get_ticks_msec() - soak_started) / 1000.0 if soak_started else 0,
+		"soak_complete": soak_complete, "soak_stalls": soak_stalls, "soak_invalid_states": soak_invalid_states,
+		"simulated_rally_seconds": soak_physics_ticks / 120.0, "soak_matches": soak_matches}
 
 func _collect_widgets(node: Node, widgets: Array) -> void:
 	if node is BaseButton and node.is_visible_in_tree():
