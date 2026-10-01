@@ -11,4 +11,5 @@ checks/fixtures/
 validation/raw/
 .DS_Store
 *.keystore
+validation/**/*.import
 .env

@@ -1,7 +1,7 @@
 extends Node2D
 
 var finish := 0
-const COLORS = [Color("165f81"), Color("23564c"), Color("344358")]
+const SKINS = [preload("res://resources/skins/atlantic.tres"), preload("res://resources/skins/evergreen.tres"), preload("res://resources/skins/graphite.tres")]
 var surface: ColorRect
 
 func _ready() -> void:
@@ -25,9 +25,9 @@ void fragment() {
 	apply_finish(finish)
 
 func apply_finish(value: int) -> void:
-	finish = clampi(value, 0, COLORS.size() - 1)
+	finish = clampi(value, 0, SKINS.size() - 1)
 	if surface:
-		surface.material.set_shader_parameter("tint", COLORS[finish])
+		surface.material.set_shader_parameter("tint", SKINS[finish].tint)
 	queue_redraw()
 
 func _draw() -> void:

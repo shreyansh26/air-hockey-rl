@@ -1,0 +1,198 @@
+{
+  "serial": "emulator-5560",
+  "resolution": [
+    1080,
+    2424
+  ],
+  "levels": {
+    "easy": {
+      "model_hash": "eca557f0d630afef8b57e541bdbca8859075925232831376e5e7552947887abf",
+      "input_pause_goals_rematch_focus_back": "passed"
+    },
+    "medium": {
+      "model_hash": "9d30c3057cabcea3aa640804a4588be34f32b08cbe739810cb81d8f5e2ab6507",
+      "input_pause_goals_rematch_focus_back": "passed"
+    },
+    "hard": {
+      "model_hash": "12fed0cd5d24075ea9af71ce19b0f5c581ad768630e5403f460b05b8a1b3c5d9",
+      "input_pause_goals_rematch_focus_back": "passed"
+    },
+    "insane": {
+      "model_hash": "8b101db66d597b3f6588f3aa245eeba9f7ed49ddc60de498faa561a84f9668e5",
+      "input_pause_goals_rematch_focus_back": "passed"
+    }
+  },
+  "cosmetics_persist": "passed",
+  "offline_first_launch": "passed",
+  "physics": {
+    "cases": 108,
+    "check": "physics",
+    "failures": [],
+    "random_seed": 20261001
+  },
+  "parity": {
+    "easy": {
+      "max_abs_error": 6.55651092529297e-07,
+      "mean_ms": 0.1638455,
+      "observations": 10000,
+      "p95_ms": 0.269,
+      "weights_hash": "eca557f0d630afef8b57e541bdbca8859075925232831376e5e7552947887abf"
+    },
+    "hard": {
+      "max_abs_error": 5.96046447753906e-07,
+      "mean_ms": 0.1673744,
+      "observations": 10000,
+      "p95_ms": 0.285,
+      "weights_hash": "12fed0cd5d24075ea9af71ce19b0f5c581ad768630e5403f460b05b8a1b3c5d9"
+    },
+    "insane": {
+      "max_abs_error": 5.96046447753906e-07,
+      "mean_ms": 0.1690148,
+      "observations": 10000,
+      "p95_ms": 0.29,
+      "weights_hash": "8b101db66d597b3f6588f3aa245eeba9f7ed49ddc60de498faa561a84f9668e5"
+    },
+    "medium": {
+      "max_abs_error": 4.76837158203125e-07,
+      "mean_ms": 0.1732167,
+      "observations": 10000,
+      "p95_ms": 0.298,
+      "weights_hash": "9d30c3057cabcea3aa640804a4588be34f32b08cbe739810cb81d8f5e2ab6507"
+    }
+  },
+  "android_api": "35",
+  "android_release": "15",
+  "abi": "arm64-v8a",
+  "final_snapshot": {
+    "actor_ms_p95": 0.405,
+    "boot_id": "1790843036.51753",
+    "bot": [
+      300.0,
+      170.0
+    ],
+    "contacts": [
+      0,
+      0
+    ],
+    "frame_ms_p50": 40.642,
+    "frame_ms_p95": 55.089,
+    "frame_ms_p99": 67.513,
+    "level": 1,
+    "model_error": "",
+    "model_hash": "prototype",
+    "origin": [
+      63.529411315918,
+      242.379241943359
+    ],
+    "paddle": [
+      300.0,
+      830.0
+    ],
+    "panel": "menu",
+    "parity": {
+      "easy": {
+        "max_abs_error": 6.55651092529297e-07,
+        "mean_ms": 0.1638455,
+        "observations": 10000,
+        "p95_ms": 0.269,
+        "weights_hash": "eca557f0d630afef8b57e541bdbca8859075925232831376e5e7552947887abf"
+      },
+      "hard": {
+        "max_abs_error": 5.96046447753906e-07,
+        "mean_ms": 0.1673744,
+        "observations": 10000,
+        "p95_ms": 0.285,
+        "weights_hash": "12fed0cd5d24075ea9af71ce19b0f5c581ad768630e5403f460b05b8a1b3c5d9"
+      },
+      "insane": {
+        "max_abs_error": 5.96046447753906e-07,
+        "mean_ms": 0.1690148,
+        "observations": 10000,
+        "p95_ms": 0.29,
+        "weights_hash": "8b101db66d597b3f6588f3aa245eeba9f7ed49ddc60de498faa561a84f9668e5"
+      },
+      "medium": {
+        "max_abs_error": 4.76837158203125e-07,
+        "mean_ms": 0.1732167,
+        "observations": 10000,
+        "p95_ms": 0.298,
+        "weights_hash": "9d30c3057cabcea3aa640804a4588be34f32b08cbe739810cb81d8f5e2ab6507"
+      }
+    },
+    "physics": {
+      "cases": 108,
+      "check": "physics",
+      "failures": [],
+      "random_seed": 20261001
+    },
+    "scale": 0.788235294117647,
+    "scores": [
+      0,
+      0
+    ],
+    "settings": {
+      "bot": 1,
+      "haptics": true,
+      "human": 0,
+      "level": 1,
+      "offset": 0.0,
+      "puck": 0,
+      "reduced_effects": false,
+      "sound": true,
+      "table": 0
+    },
+    "soak_matches": 0,
+    "soak_seconds": 0,
+    "state": "menu",
+    "static_memory_bytes": 38325681.0,
+    "storage_ok": true,
+    "texture_memory_bytes": 33578174.0,
+    "touch_id": -1,
+    "viewport": [
+      600.0,
+      1346.0
+    ],
+    "widgets": [
+      {
+        "rect": [
+          297.0,
+          560.5,
+          210.0,
+          74.0
+        ],
+        "text": "Medium",
+        "type": "OptionButton"
+      },
+      {
+        "rect": [
+          93.0,
+          648.5,
+          414.0,
+          74.0
+        ],
+        "text": "Play",
+        "type": "Button"
+      },
+      {
+        "rect": [
+          93.0,
+          736.5,
+          414.0,
+          74.0
+        ],
+        "text": "Customize",
+        "type": "Button"
+      },
+      {
+        "rect": [
+          93.0,
+          824.5,
+          414.0,
+          74.0
+        ],
+        "text": "Settings",
+        "type": "Button"
+      }
+    ]
+  }
+}

@@ -6,6 +6,8 @@ from pathlib import Path
 import shlex
 import subprocess
 import time
+import re
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -58,7 +60,7 @@ class Device:
         time.sleep(0.3)
 
     def command(self, **command):
-        script = "printf '%s' " + shlex.quote(json.dumps(command)) + " > files/qa-command.json"
+        script = "printf '%s' " + shlex.quote(json.dumps(command)) + " > files/qa-command.tmp && mv files/qa-command.tmp files/qa-command.json"
         self.adb("shell", "run-as " + self.package + " sh -c " + shlex.quote(script))
 
     def launch(self):
@@ -68,7 +70,14 @@ class Device:
             previous = None
         self.adb("shell", "am", "force-stop", self.package)
         self.adb("shell", "am", "start", "-n", self.package + "/com.godot.game.GodotApp")
-        return self.wait(lambda s: s["state"] == "menu" and s.get("boot_id") != previous)
+        state = self.wait(lambda s: s["state"] == "menu" and s.get("boot_id") != previous)
+        self.adb("shell", "uiautomator", "dump", "/sdcard/glide-ui.xml")
+        tree = ET.fromstring(self.adb("shell", "cat", "/sdcard/glide-ui.xml"))
+        for node in tree.iter("node"):
+            if node.get("text") == "Got it" and node.get("package") == "com.android.systemui":
+                left, top, right, bottom = map(int, re.findall(r"\d+", node.get("bounds")))
+                self.adb("shell", "input", "tap", str((left + right) // 2), str((top + bottom) // 2))
+        return state
 
     def screenshot(self, name):
         path = ROOT / f"validation/screenshots/{name}.png"
@@ -97,8 +106,7 @@ def main(args):
         sx = device.width / state["viewport"][0]
         sy = device.height / state["viewport"][1]
         device.adb("shell", "input", "swipe", str(round(x * sx)), str(round(y * sy)), str(round((x + 130 * state["scale"]) * sx)), str(round((y - 70 * state["scale"]) * sy)), "800")
-        moved = device.wait(lambda s: abs(s["paddle"][0] - before[0]) > 30)
-        assert moved["touch_id"] == -1
+        moved = device.wait(lambda s: abs(s["paddle"][0] - before[0]) > 30 and s["touch_id"] == -1)
         device.tap("Pause")
         paused = device.wait(lambda s: s["state"] == "paused")
         time.sleep(0.6)
