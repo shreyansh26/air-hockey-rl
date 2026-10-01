@@ -74,6 +74,10 @@ func _ready() -> void:
 	resized.connect(_layout)
 	_layout()
 	_menu()
+	if OS.has_feature("qa"):
+		var qa = load("res://checks/runtime_check.gd").new()
+		add_child(qa)
+		qa.initialize(self)
 
 func _build_theme() -> void:
 	theme = Theme.new()

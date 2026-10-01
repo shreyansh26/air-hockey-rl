@@ -66,7 +66,7 @@ def train(config, resume=None):
     output = ROOT / config["output"]
     output.mkdir(parents=True, exist_ok=True)
     (output / "config.json").write_text(json.dumps({**config, "physics_hash": physics_hash()}, indent=2) + "\n")
-    env = make_env(arenas=config["arenas"], seed=config["seed"], delay=config["delay_ticks"], log_dir=output)
+    env = make_env(arenas=config["arenas"], processes=config.get("processes", 1), seed=config["seed"], delay=config["delay_ticks"], log_dir=output)
     evaluation = None
     model = None
     progress = Progress(output, config)
@@ -84,11 +84,12 @@ def train(config, resume=None):
             model = PPO("MlpPolicy", env, device=config.get("device", "cpu"), seed=config["seed"], policy_kwargs=policy_kwargs,
                         verbose=1, **config["ppo"])
         model.set_logger(configure(str(output), ["stdout", "csv", "tensorboard"]))
-        callbacks = [progress, CheckpointCallback(save_freq=max(1, config.get("checkpoint_every", 50000) // config["arenas"]), save_path=str(output), name_prefix="ppo")]
+        total_envs = env.num_envs
+        callbacks = [progress, CheckpointCallback(save_freq=max(1, config.get("checkpoint_every", 50000) // total_envs), save_path=str(output), name_prefix="ppo")]
         if config.get("eval_every", 0):
             evaluation = make_env(arenas=4, seed=900001, delay=config["delay_ticks"], log_dir=output / "evaluation")
             evaluation.env_method("configure", mode="rally", shaping=0, hit_reward=0)
-            callbacks.append(EvalCallback(evaluation, best_model_save_path=str(output / "best"), log_path=str(output), eval_freq=max(1, config["eval_every"] // config["arenas"]), n_eval_episodes=20, deterministic=True))
+            callbacks.append(EvalCallback(evaluation, best_model_save_path=str(output / "best"), log_path=str(output), eval_freq=max(1, config["eval_every"] // total_envs), n_eval_episodes=20, deterministic=True))
         pool_path = Path(resume).parent / "opponents.json" if resume else output / "opponents.json"
         if pool_path.exists():
             progress.pool = json.loads(pool_path.read_text())

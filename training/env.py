@@ -111,9 +111,16 @@ class Transport(GodotEnv):
 
 
 class HockeyVecEnv(VecEnv):
-    def __init__(self, arenas=16, seed=1, delay=10, log_dir=None):
-        self.client = Transport(arenas, seed, delay, log_dir)
-        super().__init__(self.client.num_envs, self.client.observation_space, self.client.action_space)
+    def __init__(self, arenas=16, seed=1, delay=10, log_dir=None, processes=1):
+        self.clients = []
+        try:
+            for i in range(processes):
+                self.clients.append(Transport(arenas, seed + i * 1000003, delay, log_dir))
+        except BaseException:
+            self.close()
+            raise
+        self.client = self.clients[0]
+        super().__init__(arenas * processes, self.client.observation_space, self.client.action_space)
         self.render_mode = None
         self.bridge_seconds = 0.0
         self.transitions = 0
@@ -126,7 +133,11 @@ class HockeyVecEnv(VecEnv):
         return {"obs": array}
 
     def reset(self):
-        obs, self.reset_infos = self.client.reset(seed=self._seeds[0])
+        obs, self.reset_infos = [], []
+        for i, client in enumerate(self.clients):
+            observations, infos = client.reset(seed=self._seeds[i * client.num_envs])
+            obs.extend(observations)
+            self.reset_infos.extend(infos)
         self._reset_seeds()
         self._reset_options()
         return self._observations(obs)
@@ -137,14 +148,16 @@ class HockeyVecEnv(VecEnv):
             raise ValueError("Actions must be a finite (N, 2) batch")
         self._sent = time.perf_counter()
         try:
-            self.client.step_send(np.clip(actions, -1, 1))
+            for i, client in enumerate(self.clients):
+                client.step_send(np.clip(actions[i * client.num_envs:(i + 1) * client.num_envs], -1, 1))
         except BaseException:
             self.close()
             raise
 
     def step_wait(self):
         try:
-            obs, rewards, terminated, truncated, infos = self.client.step_recv()
+            batches = [client.step_recv() for client in self.clients]
+            obs, rewards, terminated, truncated, infos = [sum((list(batch[i]) for batch in batches), []) for i in range(5)]
         except BaseException:
             self.close()
             raise
@@ -167,7 +180,8 @@ class HockeyVecEnv(VecEnv):
         return self._observations(obs), rewards, dones, infos
 
     def close(self):
-        self.client.close()
+        for client in self.clients:
+            client.close()
 
     def get_attr(self, attr_name, indices=None):
         if attr_name == "render_mode":
@@ -184,8 +198,8 @@ class HockeyVecEnv(VecEnv):
     def env_method(self, method_name, *args, indices=None, **kwargs):
         if method_name not in {"configure", "inspect"}:
             raise AttributeError(method_name)
-        result = self.client.command(method_name, **kwargs)
-        return [result for _ in self._get_indices(indices)]
+        results = [client.command(method_name, **kwargs) for client in self.clients]
+        return [results[i // self.client.num_envs] for i in self._get_indices(indices)]
 
     def env_is_wrapped(self, wrapper_class, indices=None):
         return [False for _ in self._get_indices(indices)]
