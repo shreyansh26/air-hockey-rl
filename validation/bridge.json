@@ -1,0 +1,36 @@
+{
+  "pendulum_ppo": "passed",
+  "godot_ppo_resume": "passed",
+  "batch_dtype_reset_terminal": "passed",
+  "terminal_mid_action": "passed",
+  "exact_four_ticks": "passed",
+  "travel": 3.9933471679689774,
+  "frozen_while_waiting": "passed",
+  "independent_worlds": "passed",
+  "child_cleanup": "passed",
+  "batch_benchmarks": [
+    {
+      "arenas": 16,
+      "transitions": 2048,
+      "seconds": 0.5838515410141554,
+      "transitions_per_second": 3507.741019990468,
+      "simulation_seconds_per_wall_second_per_arena": 7.307793791646809
+    },
+    {
+      "arenas": 32,
+      "transitions": 4096,
+      "seconds": 1.1689604590064846,
+      "transitions_per_second": 3503.9679643922655,
+      "simulation_seconds_per_wall_second_per_arena": 3.6499666295752764
+    },
+    {
+      "arenas": 64,
+      "transitions": 8192,
+      "seconds": 2.263317457982339,
+      "transitions_per_second": 3619.4657409229967,
+      "simulation_seconds_per_wall_second_per_arena": 1.8851384067307275
+    }
+  ],
+  "device": "cpu",
+  "torch_threads": 1
+}

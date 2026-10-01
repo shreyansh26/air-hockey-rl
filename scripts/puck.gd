@@ -3,8 +3,8 @@ extends RigidBody2D
 const CONFIG = preload("res://resources/physics.tres")
 var tint := Color("eaf8ff")
 var reduced_effects := false
-var reset_pending := false
 var reset_transform := Transform2D.IDENTITY
+var integration_ticks := 0
 
 func _ready() -> void:
 	gravity_scale = 0.0
@@ -26,19 +26,17 @@ func _ready() -> void:
 	add_child(collider)
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
-	if reset_pending:
-		state.transform = reset_transform
-		state.linear_velocity = linear_velocity
-		reset_pending = false
+	integration_ticks += 1
 	if state.linear_velocity.is_finite():
 		state.linear_velocity = state.linear_velocity.limit_length(CONFIG.puck_speed)
 	else:
 		state.linear_velocity = Vector2.ZERO
 
 func reset_at(point: Vector2, velocity := Vector2.ZERO) -> void:
+	integration_ticks = 0
 	position = point
 	reset_transform = global_transform
-	reset_pending = true
+	PhysicsServer2D.body_set_state(get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, reset_transform)
 	linear_velocity = velocity.limit_length(CONFIG.puck_speed)
 	angular_velocity = 0
 	reset_physics_interpolation()

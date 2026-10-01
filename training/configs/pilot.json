@@ -1,0 +1,11 @@
+{
+  "seed": 17, "arenas": 16, "delay_ticks": 10, "transitions": 500000,
+  "output": "training/runs/pilot", "device": "cpu", "torch_threads": 1,
+  "checkpoint_every": 50000, "freeze_every": 200000, "eval_every": 100000,
+  "curriculum": [
+    {"until": 150000, "mode": "defense", "hit_reward": 0.05, "shaping": 0.03},
+    {"until": 300000, "mode": "attack", "hit_reward": 0.025, "shaping": 0.02},
+    {"until": 500000, "mode": "mixed", "hit_reward": 0.0, "shaping": 0.01}
+  ],
+  "ppo": {"learning_rate": 0.0003, "n_steps": 256, "batch_size": 256, "n_epochs": 5, "gamma": 0.99, "gae_lambda": 0.95, "clip_range": 0.2, "ent_coef": 0.003}
+}

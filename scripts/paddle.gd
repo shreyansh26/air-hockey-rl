@@ -4,7 +4,6 @@ const CONFIG = preload("res://resources/physics.tres")
 var command := Vector2.ZERO
 var tint := Color("ffbd73")
 var reduced_effects := false
-var reset_pending := false
 var reset_transform := Transform2D.IDENTITY
 
 func _ready() -> void:
@@ -31,17 +30,13 @@ func set_command(value: Vector2) -> void:
 		command = Vector2.ZERO
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
-	if reset_pending:
-		state.transform = reset_transform
-		state.linear_velocity = Vector2.ZERO
-		reset_pending = false
 	state.linear_velocity = state.linear_velocity.move_toward(command * CONFIG.paddle_speed,
 		CONFIG.paddle_acceleration * state.step).limit_length(CONFIG.paddle_speed)
 
 func reset_at(point: Vector2) -> void:
 	position = point
 	reset_transform = global_transform
-	reset_pending = true
+	PhysicsServer2D.body_set_state(get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, reset_transform)
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0
 	command = Vector2.ZERO

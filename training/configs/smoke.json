@@ -1,0 +1,7 @@
+{
+  "seed": 17, "arenas": 16, "delay_ticks": 10, "transitions": 50000,
+  "output": "training/runs/smoke", "device": "cpu", "torch_threads": 1,
+  "checkpoint_every": 25000, "freeze_every": 100000,
+  "curriculum": [{"until": 50000, "mode": "defense", "hit_reward": 0.05, "shaping": 0.03}],
+  "ppo": {"learning_rate": 0.0003, "n_steps": 256, "batch_size": 256, "n_epochs": 5, "gamma": 0.99, "gae_lambda": 0.95, "clip_range": 0.2, "ent_coef": 0.005}
+}

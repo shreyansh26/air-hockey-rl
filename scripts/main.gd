@@ -35,8 +35,11 @@ var frames: Array[float] = []
 var trail: Array[Vector2] = []
 var audio: AudioStreamPlayer
 var storage_ok := true
+var last_sample_tick := 0
+var last_decision_tick := -1
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().auto_accept_quit = false
 	_load_settings()
@@ -282,6 +285,8 @@ func _begin_serve(seconds: float) -> void:
 	trail.clear()
 	if history:
 		history.reset(arena, 1)
+	last_sample_tick = 0
+	last_decision_tick = -1
 	state = "countdown"
 	timer = seconds
 	overlay.hide()
@@ -307,9 +312,11 @@ func _physics_process(delta: float) -> void:
 		else:
 			var keys := Vector2(float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)), float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN)) - float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP)))
 			arena.paddles[0].set_command(keys)
-		if history:
+		if history and arena.puck.integration_ticks > last_sample_tick:
 			history.record(arena, 1)
-		if arena.ticks % 4 == 0:
+			last_sample_tick = arena.puck.integration_ticks
+		if arena.puck.integration_ticks % 4 == 0 and arena.puck.integration_ticks != last_decision_tick:
+			last_decision_tick = arena.puck.integration_ticks
 			if actor:
 				var started := Time.get_ticks_usec()
 				var action: Vector2 = actor.predict(history.encode(actor.delay_ticks))
@@ -387,6 +394,8 @@ func _clear_input() -> void:
 			paddle.set_command(Vector2.ZERO)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouse and event.device == -1:
+		return # UI receives touch-emulated mouse; paddle input owns the real touch ID.
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		_resume() if state == "paused" else _pause()
 	if state != "rally":
