@@ -218,9 +218,12 @@ func snapshot() -> Dictionary:
 		"simulated_rally_seconds": soak_physics_ticks / 120.0, "soak_matches": soak_matches}
 
 func _collect_widgets(node: Node, widgets: Array) -> void:
+	if node is ScrollContainer and node.is_visible_in_tree():
+		var rect: Rect2 = node.get_global_rect()
+		widgets.append({"type": "ScrollContainer", "rect": [rect.position.x, rect.position.y, rect.size.x, rect.size.y]})
 	if node is BaseButton and node.is_visible_in_tree():
 		var rect: Rect2 = node.get_global_rect()
-		widgets.append({"text": node.text, "rect": [rect.position.x, rect.position.y, rect.size.x, rect.size.y], "type": node.get_class()})
+		widgets.append({"text": node.text if node.text else node.tooltip_text, "rect": [rect.position.x, rect.position.y, rect.size.x, rect.size.y], "type": node.get_class()})
 	if node is PopupMenu and node.visible:
 		var entries := []
 		for i in range(node.item_count):

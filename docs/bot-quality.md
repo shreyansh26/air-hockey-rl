@@ -264,6 +264,11 @@ A stricter follow-up tests that faster controller with gain 12 and current own
 paddle feedback, while the learned actor keeps its 30 Hz cadence and 83 ms
 world-observation delay:
 
+These recorded comparisons use the 0.1.1 gain-12 pointer profile. Version 0.1.2
+uses gain 30 for runtime finger tracking; it keeps the same motor limits and
+actors. The tournament below has not been rerun against that faster tracking
+profile, and human difficulty calibration remains unverified.
+
 | 120 Hz opponent | Insane wins | Wilson 95% interval |
 | --- | ---: | ---: |
 | Instantaneous strong interceptor | 383/400 (95.75%) | 93.30–97.33% |

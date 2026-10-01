@@ -5,6 +5,7 @@ const TABLE = preload("res://scripts/table.gd")
 const LEVELS = ["Easy", "Medium", "Hard", "Insane"]
 const TINTS = [Color("ffbd73"), Color("65d3e5"), Color("e99cbe"), Color("b2d789")]
 const PUCK_TINTS = [Color("eaf8ff"), Color("ffbd73"), Color("e99cbe"), Color("b2d789")]
+const DRAG_RESPONSE = 30.0
 var arena: Node2D
 var arena_view: SubViewport
 var arena_sprite: Sprite2D
@@ -16,6 +17,12 @@ var safe_bounds := Rect2()
 var table: Node2D
 var overlay: PanelContainer
 var content: VBoxContainer
+var header: Control
+var brand_label: Label
+var level_label: Label
+var human_caption: Label
+var bot_caption: Label
+var score_separator: Label
 var score_label: Label
 var human_score_label: Label
 var state_label: Label
@@ -96,23 +103,46 @@ func _ready() -> void:
 
 func _build_theme() -> void:
 	theme = Theme.new()
-	theme.default_font_size = 22
+	theme.default_font_size = 26
 	theme.set_color("font_color", "Label", Color("e3edf1"))
 	theme.set_color("font_color", "Button", Color("e3edf1"))
 	theme.set_constant("v_separation", "PopupMenu", 44)
 	theme.set_font_size("font_size", "PopupMenu", 22)
-	for type in ["Button", "OptionButton"]:
+	theme.set_color("font_color", "PopupMenu", Color("e3edf1"))
+	var popup := StyleBoxFlat.new()
+	popup.bg_color = Color("102f40")
+	popup.border_color = Color("34596c")
+	popup.set_border_width_all(1)
+	popup.set_corner_radius_all(16)
+	popup.content_margin_left = 8
+	popup.content_margin_right = 8
+	popup.content_margin_top = 8
+	popup.content_margin_bottom = 8
+	theme.set_stylebox("panel", "PopupMenu", popup)
+	for type in ["Button", "OptionButton", "CheckButton"]:
 		for key in ["normal", "hover", "pressed", "focus"]:
 			var box := StyleBoxFlat.new()
-			box.bg_color = Color("133041") if key == "normal" else Color("225167")
+			box.bg_color = Color("153444") if key == "normal" else Color("245369")
 			box.border_color = Color("65d3e5") if key == "focus" else Color("294b5c")
 			box.set_border_width_all(2 if key == "focus" else 1)
-			box.set_corner_radius_all(10)
+			box.set_corner_radius_all(18)
 			box.content_margin_left = 20
 			box.content_margin_right = 20
 			box.content_margin_top = 12
 			box.content_margin_bottom = 12
 			theme.set_stylebox(key, type, box)
+	theme.set_stylebox("hover", "PopupMenu", theme.get_stylebox("hover", "Button"))
+	theme.set_icon("checked", "CheckButton", preload("res://assets/switch-on.svg"))
+	theme.set_icon("unchecked", "CheckButton", preload("res://assets/switch-off.svg"))
+	theme.set_icon("grabber", "HSlider", preload("res://assets/slider-thumb.svg"))
+	theme.set_icon("grabber_highlight", "HSlider", preload("res://assets/slider-thumb.svg"))
+	for key in ["slider", "grabber_area", "grabber_area_highlight"]:
+		var track := StyleBoxFlat.new()
+		track.bg_color = Color("365565") if key == "slider" else Color("65d3e5")
+		track.set_corner_radius_all(3)
+		track.content_margin_top = 3
+		track.content_margin_bottom = 3
+		theme.set_stylebox(key, "HSlider", track)
 
 func _label(text: String, size_px := 22) -> Label:
 	var label := Label.new()
@@ -121,40 +151,62 @@ func _label(text: String, size_px := 22) -> Label:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	return label
 
-func _button(text: String, callback: Callable) -> Button:
+func _button(text: String, callback: Callable, primary := false) -> Button:
 	var button := Button.new()
 	button.text = text
-	button.custom_minimum_size.y = 74
+	button.custom_minimum_size.y = 82
+	if primary:
+		for key in ["normal", "hover", "pressed", "focus"]:
+			var box: StyleBoxFlat = theme.get_stylebox(key, "Button").duplicate()
+			box.bg_color = Color("65d3e5") if key == "normal" else Color("9ae5ee")
+			box.border_color = Color("f0fbff")
+			button.add_theme_stylebox_override(key, box)
+		for key in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+			button.add_theme_color_override(key, Color("08212b"))
 	button.pressed.connect(callback)
 	content.add_child(button)
 	return button
 
 func _build_hud() -> void:
 	touch_controls = OS.has_feature("mobile") or DisplayServer.is_touchscreen_available()
-	score_label = _label("0", 60)
+	header = Control.new()
+	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(header)
+	brand_label = _label("GLIDE", 28)
+	brand_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	header.add_child(brand_label)
+	level_label = _label("", 22)
+	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	level_label.modulate = Color("a2c4d2")
+	header.add_child(level_label)
+	human_caption = _label("YOU", 18)
+	bot_caption = _label("BOT", 18)
+	score_separator = _label("—", 28)
+	for label in [human_caption, bot_caption, score_separator]:
+		header.add_child(label)
+	score_label = _label("0", 52)
 	score_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	add_child(score_label)
-	human_score_label = _label("0", 60)
+	header.add_child(score_label)
+	human_score_label = _label("0", 52)
 	human_score_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	add_child(human_score_label)
-	state_label = _label("", 14)
+	header.add_child(human_score_label)
+	state_label = _label("", 20)
 	state_label.modulate = Color("b3d2df")
-	add_child(state_label)
-	for label in [score_label, human_score_label, state_label]:
+	header.add_child(state_label)
+	for label in [brand_label, level_label, human_caption, bot_caption, score_separator, score_label, human_score_label, state_label]:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		label.add_theme_color_override("font_outline_color", Color(0.01, 0.04, 0.06, 0.85))
-		label.add_theme_constant_override("outline_size", 4)
 	pause_button = Button.new()
-	pause_button.text = "Pause"
-	pause_button.custom_minimum_size = Vector2(104, 74)
+	pause_button.icon = preload("res://assets/pause.svg")
+	pause_button.tooltip_text = "Pause"
+	pause_button.custom_minimum_size = Vector2(82, 82)
 	pause_button.pressed.connect(_pause)
-	add_child(pause_button)
+	header.add_child(pause_button)
 	overlay = PanelContainer.new()
 	var panel := StyleBoxFlat.new()
-	panel.bg_color = Color(0.025, 0.06, 0.087, 0.97)
-	panel.border_color = Color("345365")
+	panel.bg_color = Color("0b2331")
+	panel.border_color = Color("294b5c")
 	panel.set_border_width_all(1)
-	panel.set_corner_radius_all(18)
+	panel.set_corner_radius_all(26)
 	panel.content_margin_left = 28
 	panel.content_margin_right = 28
 	panel.content_margin_top = 26
@@ -186,42 +238,49 @@ func _layout() -> void:
 		if screen.x > 0 and screen.y > 0 and safe.has_area():
 			var screen_scale := size / Vector2(screen)
 			safe_bounds = Rect2(Vector2(safe.position) * screen_scale, Vector2(safe.size) * screen_scale)
-	# Maximize the court while keeping circular art and collision footprints aligned.
-	# Shared Arena physics remains at 600 × 1000 on every display.
-	var display_rect := Rect2(Vector2.ZERO, size)
-	var scale_fit := minf(size.x / 680.0, size.y / 1080.0)
+	header.position = safe_bounds.position + Vector2(20, 14)
+	header.size = Vector2(maxf(1, safe_bounds.size.x - 40), 158)
+	brand_label.position = Vector2.ZERO
+	brand_label.size = Vector2(110, 36)
+	level_label.position = Vector2(114, 4)
+	level_label.size = Vector2(maxf(1, header.size.x - 114), 30)
+	human_caption.position = Vector2(0, 46)
+	bot_caption.position = Vector2(112, 46)
+	for label in [human_caption, bot_caption]:
+		label.size = Vector2(64, 24)
+	human_score_label.position = Vector2(0, 66)
+	score_label.position = Vector2(112, 66)
+	for label in [score_label, human_score_label]:
+		label.size = Vector2(64, 58)
+	score_separator.position = Vector2(68, 72)
+	score_separator.size = Vector2(40, 48)
+	state_label.position = Vector2(0, 126)
+	state_label.size = Vector2(header.size.x, 24)
+	pause_button.position = Vector2(header.size.x - 82, 42)
+	# Uniformly fit the unchanged physics court below the safe-area header.
+	var court_area := Rect2(Vector2(0, header.position.y + header.size.y + 12),
+		Vector2(size.x, maxf(1, safe_bounds.end.y - header.position.y - header.size.y - 28)))
+	var display_rect := court_area
+	var scale_fit := minf(court_area.size.x / 680.0, court_area.size.y / 1080.0)
 	display_rect.size = Vector2(680, 1080) * scale_fit
-	display_rect.position = (size - display_rect.size) / 2
+	display_rect.position = Vector2((size.x - display_rect.size.x) / 2,
+		clampf((size.y - display_rect.size.y) / 2 + 24, court_area.position.y, court_area.end.y - display_rect.size.y))
 	table_stretch = display_rect.size / Vector2(680, 1080)
 	table_scale = minf(table_stretch.x, table_stretch.y)
 	arena_sprite.scale = table_stretch
 	arena_sprite.position = display_rect.position
 	table_origin = arena_sprite.position + Vector2(40, 40) * table_stretch
-	var court := Rect2(table_origin, Vector2(600, 1000) * table_stretch)
-	var score_size := Vector2(minf(90, court.size.x * 0.16), maxf(50, 84 * table_scale))
-	for label in [score_label, human_score_label]:
-		label.add_theme_font_size_override("font_size", int(clampf(60 * table_scale, 32, 64)))
-		label.size = score_size
-	score_label.position = table_to_screen(Vector2(535, 455)) - score_label.size / 2
-	human_score_label.position = table_to_screen(Vector2(535, 545)) - human_score_label.size / 2
-	state_label.size = Vector2(220, 28)
-	state_label.position = table_to_screen(Vector2(300, 595)) - state_label.size / 2
-	pause_button.position = table_to_screen(Vector2(75, 500)) - pause_button.size / 2
-	pause_button.position.x = clampf(pause_button.position.x, court.position.x + 12, court.end.x - pause_button.size.x - 12)
-	overlay.size.x = minf(470, maxf(1, safe_bounds.size.x - 32))
+	overlay.size.x = minf(520, maxf(1, safe_bounds.size.x - 32))
 	for child in content.get_children():
 		if child is Label:
 			child.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		elif child is HBoxContainer:
-			for widget in child.get_children():
-				if widget is OptionButton:
-					widget.custom_minimum_size.x = minf(210, maxf(125, overlay.size.x / 2 - 24))
 	if content.get_child_count() > 0 and content.get_child(0) is Label:
-		content.get_child(0).add_theme_font_size_override("font_size", 32 if overlay.size.x < 410 else 42)
+		content.get_child(0).add_theme_font_size_override("font_size", 32 if overlay.size.x < 410 else 38)
 	overlay.size.y = minf(content.get_combined_minimum_size().y + 52, maxf(1, safe_bounds.size.y - 32))
 	overlay.position = safe_bounds.position + (safe_bounds.size - overlay.size) / 2
 
 func _clear_panel(title: String, subtitle := "") -> void:
+	Input.use_accumulated_input = true
 	for child in content.get_children():
 		content.remove_child(child)
 		child.queue_free()
@@ -250,24 +309,28 @@ func _menu() -> void:
 	arena.reset_rally()
 	_reset_puck_visual()
 	actor = null
-	_clear_panel("PLAY THE TABLE", "A quick match. A worthy opponent.")
-	_picker("Difficulty", LEVELS, level, func(index): level = index; settings.level = index; _save_settings())
-	_button("Play", _start_match)
+	_clear_panel("Play a match", "First to 7")
+	_picker("Difficulty", LEVELS, level, func(index): level = index; settings.level = index; _update_header(); _save_settings())
+	_button("Play", _start_match, true)
 	_button("Customize", _customize)
 	_button("Settings", _settings_menu)
 	pause_button.hide()
 	state_label.text = ""
 	score_label.text = "0"
 	human_score_label.text = "0"
+	_update_header()
 
 func _picker(title: String, choices: Array, selected: int, callback: Callable, colors: Array = [], perforated := false) -> OptionButton:
-	var row := HBoxContainer.new()
-	var label := _label(title, 21)
+	var row: BoxContainer = VBoxContainer.new() if colors.is_empty() or overlay.size.x < 420 else HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	var label := _label(title, 24)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(label)
 	var picker := OptionButton.new()
-	picker.custom_minimum_size = Vector2(210, 74)
+	picker.custom_minimum_size.y = 82
+	if row is HBoxContainer:
+		picker.custom_minimum_size.x = 240
 	for i in range(choices.size()):
 		picker.add_item(choices[i])
 		if not colors.is_empty():
@@ -302,7 +365,7 @@ func _picker_tint(picker: OptionButton, tint: Color) -> void:
 
 func _customize() -> void:
 	panel_mode = "customize"
-	_clear_panel("MAKE IT YOURS", "A fresh finish. The same game.")
+	_clear_panel("Customize", "Choose your finish")
 	var previews := HBoxContainer.new()
 	previews.add_theme_constant_override("separation", 10)
 	for entry in [["You", arena.paddles[0]], ["Puck", arena.puck], ["Bot", arena.paddles[1]]]:
@@ -325,33 +388,43 @@ func _customize() -> void:
 	_picker("Your paddle", ["Apricot", "Glacier", "Rose", "Lime"], settings.human, func(i): settings.human = i; _apply_cosmetics(); _save_settings(), TINTS)
 	_picker("Bot paddle", ["Apricot", "Glacier", "Rose", "Lime"], settings.bot, func(i): settings.bot = i; _apply_cosmetics(); _save_settings(), TINTS)
 	_button("Reset appearance", func(): settings.table = 0; settings.puck = 0; settings.human = 0; settings.bot = 1; _apply_cosmetics(); _save_settings(); _customize())
-	_button("Done", _menu)
+	_button("Done", _menu, true)
 
 func _toggle(title: String, key: String) -> CheckButton:
 	var toggle := CheckButton.new()
 	toggle.text = title
-	toggle.custom_minimum_size.y = 74
+	toggle.custom_minimum_size.y = 88
+	toggle.tooltip_text = title + ": " + ("On" if settings[key] else "Off")
 	toggle.button_pressed = settings[key]
-	toggle.toggled.connect(func(value): settings[key] = value; _apply_cosmetics(); _save_settings())
+	toggle.toggled.connect(func(value):
+		settings[key] = value
+		toggle.tooltip_text = title + ": " + ("On" if value else "Off")
+		_apply_cosmetics()
+		_save_settings())
 	content.add_child(toggle)
 	return toggle
 
 func _settings_menu() -> void:
 	panel_mode = "settings"
-	_clear_panel("SETTINGS", "Keep your eye on the puck.")
+	_clear_panel("Settings", "")
 	for entry in [["Sound", "sound"], ["Haptics", "haptics"], ["Reduced effects", "reduced_effects"]]:
 		_toggle(entry[0], entry[1])
-	content.add_child(_label("Touch offset", 20))
+	var offset_label := _label("Touch offset · %d" % settings.offset, 24)
+	offset_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	content.add_child(offset_label)
 	var offset := HSlider.new()
 	offset.max_value = 100
 	offset.step = 10
 	offset.value = settings.offset
-	offset.custom_minimum_size.y = 48
-	offset.value_changed.connect(func(value): settings.offset = value; _save_settings())
+	offset.custom_minimum_size.y = 82
+	offset.value_changed.connect(func(value):
+		settings.offset = value
+		offset_label.text = "Touch offset · %d" % value
+		_save_settings())
 	content.add_child(offset)
 	if not storage_ok:
 		content.add_child(_label("Settings last for this session only.", 18))
-	_button("Done", _menu)
+	_button("Done", _menu, true)
 
 func _apply_cosmetics() -> void:
 	if not settings.sound and audio:
@@ -365,6 +438,8 @@ func _apply_cosmetics() -> void:
 	for body in [arena.puck, arena.paddles[0], arena.paddles[1]]:
 		body.reduced_effects = settings.reduced_effects
 		body.queue_redraw()
+	if header:
+		_update_header()
 	if settings.reduced_effects:
 		particles.clear()
 		trail.clear()
@@ -388,8 +463,10 @@ func _start_match() -> void:
 	serve_side = randi_range(0, 1)
 	pause_button.show()
 	_begin_serve(0.7, true)
+	_update_header()
 
 func _begin_serve(seconds: float, new_match := false) -> void:
+	Input.use_accumulated_input = false
 	if new_match:
 		_clear_input()
 		arena.reset_rally(serve_side)
@@ -440,14 +517,14 @@ func _physics_process(delta: float) -> void:
 				arena.set_running(false)
 				state = "results"
 				_clear_panel("YOU WIN" if scores[0] >= 7 else "BOT WINS", str(scores[0]) + "  —  " + str(scores[1]))
-				_button("Rematch", _start_match)
+				_button("Rematch", _start_match, true)
 				_button("Menu", _menu)
 				pause_button.hide()
 			else:
 				_begin_serve(0.45)
 	if state in ["rally", "countdown", "goal"]:
 		if touch_id != -1:
-			arena.drive_to(0, drag_target)
+			_drive_player()
 		else:
 			var keys := Vector2(float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)), float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN)) - float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP)))
 			arena.paddles[0].set_command(keys)
@@ -498,6 +575,7 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	draw_rect(Rect2(Vector2.ZERO, size), TABLE.SKINS[settings.table].tint.darkened(0.55))
 	if arena and state == "rally" and not settings.reduced_effects:
 		for i in range(1, trail.size()):
 			draw_line(table_to_screen(trail[i - 1]), table_to_screen(trail[i]), Color(0.8, 0.96, 1, 0.1 * float(i) / trail.size()), 6 * table_scale, true)
@@ -533,6 +611,14 @@ func _stall() -> void:
 func _update_score() -> void:
 	score_label.text = str(scores[1])
 	human_score_label.text = str(scores[0])
+	_update_header()
+
+func _update_header() -> void:
+	level_label.text = LEVELS[level] + " · First to 7"
+	human_score_label.modulate = TINTS[settings.human]
+	score_label.modulate = TINTS[settings.bot]
+	for widget in [score_label, human_score_label, human_caption, bot_caption, score_separator]:
+		widget.visible = state != "menu"
 
 func _pause() -> void:
 	if state not in ["rally", "countdown", "goal"]:
@@ -541,12 +627,13 @@ func _pause() -> void:
 	state = "paused"
 	_clear_input()
 	get_tree().paused = true
-	_clear_panel("PAUSED", "The table can wait.")
-	_button("Resume", _resume)
+	_clear_panel("Paused", "")
+	_button("Resume", _resume, true)
 	_toggle("Sound", "sound")
 	_button("Menu", _menu)
 
 func _resume() -> void:
+	Input.use_accumulated_input = false
 	state = before_pause
 	get_tree().paused = false
 	overlay.hide()
@@ -598,6 +685,11 @@ func _grab(point: Vector2, id: int) -> void:
 func _drag(point: Vector2) -> void:
 	var offset: float = settings.offset if touch_id >= 0 else 0.0
 	drag_target = arena.clamp_target(screen_to_table(point) + drag_offset - Vector2(0, offset), 0)
+	_drive_player()
+
+func _drive_player() -> void:
+	# Track the finger sooner; the shared motor still caps speed and acceleration.
+	arena.paddles[0].set_command((drag_target - arena.paddles[0].position) * DRAG_RESPONSE / arena.CONFIG.paddle_speed)
 
 func _notification(what: int) -> void:
 	if what in [NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED]:

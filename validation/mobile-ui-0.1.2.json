@@ -1,0 +1,34 @@
+{
+  "version": "0.1.2",
+  "code": 3,
+  "layout": {
+    "check": "layout",
+    "failures": [],
+    "viewports": 6
+  },
+  "touch": {
+    "check": "touch_serve",
+    "failures": [],
+    "tracking": {
+      "current": {
+        "mean_lag_units": 14.9999984741211,
+        "peak_speed": 750.00048828125,
+        "settling_error": 6.103515625e-05
+      },
+      "legacy": {
+        "mean_lag_units": 44.8082336425781,
+        "peak_speed": 599.888671875,
+        "settling_error": 0.03448486328125
+      }
+    }
+  },
+  "qa_apk_sha256": "00ea01f7e267e371a519f394e04604b4ef2b2e67505e73b74bec77f6b0d83791",
+  "production_apk_sha256": "8573a280ced39301cc6049289adc3b931e32817f2f49adb3c343d71968ad80a1",
+  "lag_reduction_percent": 66.52401298883682,
+  "android_reports": [
+    "android-ui-0.1.2-api35.json",
+    "android-ui-0.1.2-api36-small.json"
+  ],
+  "physical_touch_latency_measured": false,
+  "new_soak_run": false
+}

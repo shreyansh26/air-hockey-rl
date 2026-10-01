@@ -158,7 +158,7 @@ func _fast_opponent() -> void:
 		var target := puck if opponent_style == "puck_follow_120" else puck + Vector2(0, 30) if puck.y > 500 else Vector2(300, 840)
 		if learner_side == 0:
 			target = Vector2(600, 1000) - target
-		arena.drive_to(1 - learner_side, target) # Same 120 Hz gain-12 controller as human dragging.
+		arena.drive_to(1 - learner_side, target) # 120 Hz gain-12 comparison; runtime finger tracking uses gain 30.
 
 func observation() -> PackedFloat32Array:
 	return history.encode(delay_ticks)

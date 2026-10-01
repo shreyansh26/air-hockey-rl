@@ -19,8 +19,8 @@ func _initialize() -> void:
 	assert(config.load("res://export_presets.cfg") == OK)
 	for preset in [1, 4, 5]:
 		var section := "preset.%s.options" % preset
-		assert(config.get_value(section, "version/code") == 2)
-		assert(config.get_value(section, "version/name") == "0.1.1")
+		assert(config.get_value(section, "version/code") == 3)
+		assert(config.get_value(section, "version/name") == "0.1.2")
 		assert(config.get_value(section, "screen/immersive_mode"))
 		assert(config.get_value(section, "screen/edge_to_edge"))
 		for key in ["launcher_icons/main_192x192", "launcher_icons/adaptive_foreground_432x432", "launcher_icons/adaptive_background_432x432"]:

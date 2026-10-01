@@ -38,6 +38,33 @@ func drag(point: Vector2, id: int) -> void:
 	Input.parse_input_event(event)
 	Input.flush_buffered_events()
 
+func tracking_trial(legacy: bool) -> Dictionary:
+	main._begin_serve(10.0)
+	main.set_physics_process(false)
+	main.arena.paddles[0].reset_at(Vector2(120, 850))
+	await ticks(2)
+	touch(Vector2(120, 850), 9)
+	var lag := 0.0
+	var peak_speed := 0.0
+	for step in range(1, 73):
+		var target := Vector2(120 + step * 5, 850) # 600 units/s, below the shared cap.
+		drag(target, 9)
+		if legacy:
+			main.arena.drive_to(0, target)
+		await physics_frame
+		if step > 32:
+			lag += target.distance_to(main.arena.paddles[0].position) / 40
+		peak_speed = maxf(peak_speed, main.arena.paddles[0].linear_velocity.length())
+	for _step in range(60):
+		drag(Vector2(480, 850), 9)
+		if legacy:
+			main.arena.drive_to(0, Vector2(480, 850))
+		await physics_frame
+	var settling_error: float = main.arena.paddles[0].position.distance_to(Vector2(480, 850))
+	touch(Vector2(480, 850), 9, false)
+	main.set_physics_process(true)
+	return {"mean_lag_units": lag, "peak_speed": peak_speed, "settling_error": settling_error}
+
 func run() -> void:
 	main = load("res://scenes/main.tscn").instantiate()
 	root.add_child(main)
@@ -54,6 +81,7 @@ func run() -> void:
 	touch(Vector2(175, 880), 3)
 	check(main.touch_id == 3 and main.drag_target.is_equal_approx(Vector2(175, 880)), "native touch targets the finger without a grab offset")
 	check(main.arena.paddles[0].position == initial, "touch never teleports the paddle")
+	check(main.arena.paddles[0].command != Vector2.ZERO, "drag updates the motor command before the next physics tick")
 	await ticks(24)
 	check(main.arena.paddles[0].position.x < initial.x - 40, "paddle follows touch during countdown")
 	check(main.arena.paddles[1].position.distance_to(initial_bot) > 1, "trained bot also moves during countdown")
@@ -114,9 +142,16 @@ func run() -> void:
 		openings[main.serve_side] = true
 	check(openings == [true, true], "new matches randomly select either opening player")
 	main._menu()
+	check(Input.use_accumulated_input, "menus restore normal UI event batching")
 	main.arena.reset_rally(0)
 	check(main.arena.puck.position == Vector2(300, 600), "training bottom reset is unchanged")
 	main.arena.reset_rally(1)
 	check(main.arena.puck.position == Vector2(300, 400), "training top reset is unchanged")
-	print(JSON.stringify({"check": "touch_serve", "failures": failures}))
+	var legacy := await tracking_trial(true)
+	var current := await tracking_trial(false)
+	check(current.mean_lag_units < legacy.mean_lag_units * 0.6, "finger tracking must reduce moving-target lag by at least 40 percent")
+	check(current.peak_speed <= main.arena.CONFIG.paddle_speed + 0.01, "faster response retains the shared motor speed cap")
+	check(current.settling_error < 2, "paddle settles on a stationary finger without drifting")
+	check(not Input.use_accumulated_input, "drag events are not held until a rendered frame")
+	print(JSON.stringify({"check": "touch_serve", "failures": failures, "tracking": {"legacy": legacy, "current": current}}))
 	quit(0 if failures.is_empty() else 1)

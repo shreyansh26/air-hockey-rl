@@ -1,0 +1,15 @@
+{
+  "model_hash": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
+  "model_error": "",
+  "before": [
+    299.605682373047,
+    832.455810546875
+  ],
+  "after": [
+    170.210220336914,
+    779.946166992188
+  ],
+  "touch_id": -1,
+  "svg_pause_icon": true,
+  "console_errors": []
+}

@@ -4,9 +4,12 @@ A portrait Godot air-hockey game for the web and native Android. First to seven,
 finger-follow touch or keyboard input, pause/rematch, three table finishes, independent puck
 and paddle colors, local settings, offline assets, and small local PPO actors.
 
-Version 0.1.1 maximizes the table with round pieces and places scores on the
-board. The app uses immersive edge-to-edge display with no header or instruction
-footer. Tall phones keep space above and below the proportional court. Paddles
+Version 0.1.2 puts scores, difficulty and a pause icon in a safe-area header
+above the proportional court. A finish-colored background fills the screen
+and Android's recent-app preview. Menus have larger switches and touch targets,
+clear primary actions and compact appearance rows. Finger tracking uses a
+faster position response and immediate drag events, with the shared physical
+speed and acceleration limits. Paddles
 remain controllable while the centered puck waits for a serve:
 0.7 seconds on a new match, then a 0.55-second goal fade and 0.45-second re-serve.
 Opening serves choose either player randomly; later serves go to the player
@@ -14,7 +17,8 @@ who conceded. Customization shows live previews and color/finish swatches.
 Sound starts off and can be enabled in Settings or Pause. Existing installs
 are muted once when upgrading; subsequent explicit choices are remembered.
 
-Implementation/evidence: [validation/STATUS.md](validation/STATUS.md). Model
+Implementation/evidence: [validation/STATUS.md](validation/STATUS.md), with the
+latest UI and input checks in [the 0.1.2 report](validation/mobile-ui-0.1.2.md). Model
 labels are not skill certificates: measured quality gates are recorded there.
 The original bots failed their quality gates. The new actor bundle and the
 reward, rollout, and trajectory analysis are in [docs/bot-quality.md](docs/bot-quality.md).

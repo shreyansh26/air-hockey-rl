@@ -16,6 +16,7 @@ class Device:
     def __init__(self, serial, port):
         self.prefix = ["adb", "-P", str(port), "-s", serial]
         self.package = "com.shreyansh26.glide"
+        self.screenshot_prefix = ""
         size = self.adb("shell", "wm", "size").strip().splitlines()[-1].split(":")[-1].strip()
         self.width, self.height = map(int, size.split("x"))
 
@@ -45,8 +46,24 @@ class Device:
 
     def tap(self, text):
         state = self.wait(lambda s: any(w.get("text") == text for w in s["widgets"]))
-        widget = next(w for w in state["widgets"] if w.get("text") == text)
-        x, y, width, height = widget["rect"]
+        for attempt in range(9):
+            widget = next(w for w in state["widgets"] if w.get("text") == text)
+            x, y, width, height = widget["rect"]
+            scroll = next((w for w in state["widgets"] if w["type"] == "ScrollContainer"), None)
+            if not scroll:
+                break
+            left, top, area_width, area_height = scroll["rect"]
+            if top <= y and y + height <= top + area_height:
+                break
+            assert attempt < 8, f"Could not scroll to {text}"
+            start, end = (0.8, 0.25) if y > top else (0.25, 0.8)
+            sx = self.width / state["viewport"][0]
+            sy = self.height / state["viewport"][1]
+            self.adb("shell", "input", "swipe", str(round((left + area_width / 2) * sx)),
+                     str(round((top + area_height * start) * sy)), str(round((left + area_width / 2) * sx)),
+                     str(round((top + area_height * end) * sy)), "300")
+            time.sleep(0.3)
+            state = self.state()
         self.tap_point(x + width / 2, y + height / 2, state)
         time.sleep(0.25)
 
@@ -57,7 +74,7 @@ class Device:
         x, y, width, height = popup["rect"]
         # PopupMenu's fixed theme separation gives equal-height selectable rows.
         self.tap_point(x + width / 2, y + (index + 0.5) * height / len(popup["items"]), state)
-        time.sleep(0.3)
+        self.wait(lambda s: not any(w["type"] == "PopupMenu" for w in s["widgets"]))
 
     def command(self, **command):
         script = "printf '%s' " + shlex.quote(json.dumps(command)) + " > files/qa-command.tmp && mv files/qa-command.tmp files/qa-command.json"
@@ -70,7 +87,7 @@ class Device:
             previous = None
         self.adb("shell", "am", "force-stop", self.package)
         self.foreground()
-        state = self.wait(lambda s: s["state"] == "menu" and s.get("boot_id") != previous)
+        state = self.wait(lambda s: s["state"] == "menu" and s.get("boot_id") != previous, timeout=90)
         self.adb("shell", "uiautomator", "dump", "/sdcard/glide-ui.xml")
         tree = ET.fromstring(self.adb("shell", "cat", "/sdcard/glide-ui.xml"))
         for node in tree.iter("node"):
@@ -91,7 +108,7 @@ class Device:
         raise AssertionError("App never acquired Android input focus")
 
     def screenshot(self, name):
-        path = ROOT / f"validation/screenshots/{name}.png"
+        path = ROOT / f"validation/screenshots/{self.screenshot_prefix}{name}.png"
         path.parent.mkdir(exist_ok=True)
         result = subprocess.run([*self.prefix, "exec-out", "screencap", "-p"], check=True, capture_output=True)
         path.write_bytes(result.stdout)
@@ -101,6 +118,7 @@ def main(args):
     if not args.serial.startswith("emulator-"):
         raise ValueError("This harness clears app data and disables networking; use a disposable Android emulator.")
     device = Device(args.serial, args.port)
+    device.screenshot_prefix = args.screenshot_prefix
     manifest = json.loads(args.manifest.read_text())
     device.launch()
     report = {"serial": args.serial, "resolution": [device.width, device.height],
@@ -171,7 +189,17 @@ def main(args):
         device.wait(lambda s: s["state"] == "paused")
         device.tap("Menu")
         report["levels"][level.lower()] = {"model_hash": state["model_hash"], "actual_bot_contacts": contact["contacts"][1], "input_pause_goals_rematch_focus_back": "passed", "angled_goal_pockets": goal_pockets}
+    device.tap("Settings")
+    device.wait(lambda s: s["panel"] == "settings")
+    device.screenshot(f"{args.serial}-settings")
+    device.tap("Sound")
+    device.wait(lambda s: s["settings"]["sound"])
+    device.tap("Sound")
+    device.wait(lambda s: not s["settings"]["sound"])
+    device.tap("Done")
+    report["sound_toggle_both_states"] = "passed"
     device.tap("Customize")
+    device.tap("Reset appearance")
     device.select("Atlantic", 1)
     device.select("Ice", 2)
     device.select("Apricot", 3)
@@ -208,7 +236,7 @@ def main(args):
     report["abi"] = device.adb("shell", "getprop", "ro.product.cpu.abi").strip()
     report["renderer"] = device.adb("shell", "getprop", "ro.hardware.egl").strip()
     report["final_snapshot"] = state
-    destination = ROOT / f"validation/android-{args.serial}.json"
+    destination = args.output or ROOT / f"validation/android-{args.serial}.json"
     destination.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2), flush=True)
     if args.soak:
@@ -224,4 +252,6 @@ if __name__ == "__main__":
     parser.add_argument("--soak", action="store_true")
     parser.add_argument("--manifest", type=Path, default=ROOT / "models/manifest.json")
     parser.add_argument("--apk", type=Path)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--screenshot-prefix", default="")
     main(parser.parse_args())

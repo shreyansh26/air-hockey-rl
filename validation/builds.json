@@ -2,7 +2,7 @@
   "physics_hash": "a4aeb4eb63b0110131e46da41178f56644ac218d9041c220f31ae8beef99d3f8",
   "artifacts": {
     "web_pack": {
-      "files": 61,
+      "files": 69,
       "model_hashes": {
         "easy": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2",
         "medium": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
@@ -13,9 +13,9 @@
       "excluded_training_checks_onnx": true
     },
     "index.pck": {
-      "bytes": 237484,
-      "gzip_bytes": 198148,
-      "sha256": "1c7b7589d5a0f64eae9ec362e83dfe6c2d2295951b84f3a036db7c19ab5fda35"
+      "bytes": 245724,
+      "gzip_bytes": 205362,
+      "sha256": "d14a52574e41190bb6062ce0932d717267425cd9a72f2470515b558abf3f7711"
     },
     "index.wasm": {
       "bytes": 38034280,
@@ -28,7 +28,7 @@
       "sha256": "8a7c7d57f7da69bb71da9de302480b87e4c7ecb467ce643665b4a288683cd18f"
     },
     "apk": {
-      "files": 63,
+      "files": 71,
       "model_hashes": {
         "easy": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2",
         "medium": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
@@ -37,12 +37,12 @@
       },
       "runtime_policy_bytes": 139714,
       "excluded_training_checks_onnx": true,
-      "bytes": 80107282,
-      "sha256": "a097dc3787f33dd33f6c7029feaa8a365f3ae2ac559a7c1b983a4d4ebe3c45a6",
+      "bytes": 80116278,
+      "sha256": "8573a280ced39301cc6049289adc3b931e32817f2f49adb3c343d71968ad80a1",
       "signing": "debug key"
     },
     "aab": {
-      "files": 63,
+      "files": 71,
       "model_hashes": {
         "easy": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2",
         "medium": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
@@ -51,8 +51,8 @@
       },
       "runtime_policy_bytes": 139714,
       "excluded_training_checks_onnx": true,
-      "bytes": 27697429,
-      "sha256": "b0b165313df43971d764aa77f08e8b334060977988a961323285103dae7db7ec",
+      "bytes": 27707003,
+      "sha256": "607adfeb73e228ec6620c5bf1c1769d7e9f787c2cd36ce82f248f97dfce686c4",
       "signing": "debug key"
     }
   },
