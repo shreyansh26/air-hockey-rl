@@ -186,13 +186,12 @@ func _layout() -> void:
 		if screen.x > 0 and screen.y > 0 and safe.has_area():
 			var screen_scale := size / Vector2(screen)
 			safe_bounds = Rect2(Vector2(safe.position) * screen_scale, Vector2(safe.size) * screen_scale)
-	# Only the viewport texture stretches. Shared Arena physics remains at 600 × 1000.
-	# Portrait fills the display; wide desktop windows retain a consistent table aspect.
+	# Maximize the court while keeping circular art and collision footprints aligned.
+	# Shared Arena physics remains at 600 × 1000 on every display.
 	var display_rect := Rect2(Vector2.ZERO, size)
-	if size.x > size.y:
-		var scale_fit := minf(size.x / 680.0, size.y / 1080.0)
-		display_rect.size = Vector2(680, 1080) * scale_fit
-		display_rect.position = (size - display_rect.size) / 2
+	var scale_fit := minf(size.x / 680.0, size.y / 1080.0)
+	display_rect.size = Vector2(680, 1080) * scale_fit
+	display_rect.position = (size - display_rect.size) / 2
 	table_stretch = display_rect.size / Vector2(680, 1080)
 	table_scale = minf(table_stretch.x, table_stretch.y)
 	arena_sprite.scale = table_stretch

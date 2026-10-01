@@ -7,6 +7,14 @@ Gameplay loads one of four trained actors and fails visibly if it is missing
 or incompatible. Training, QA, critics, optimizers, and ONNX companions are
 excluded from production exports.
 
+**0.1.1 mobile usability:** the proportional table, direct touch controls,
+free paddles during centered serves, on-board HUD, muted defaults, previews
+and Glide launch artwork are implemented. Final Android 15/16 regressions,
+real OnePlus installation, Safari gameplay/customization, six-size layouts
+and production packaging pass. Details and limits are in
+[mobile-ux.md](mobile-ux.md). The table below retains the broader implementation
+and previous soak evidence; the older memory/performance failures remain open.
+
 | Gate | State |
 | --- | --- |
 | Shared physics checks | Passed 113 cases on headless desktop, web, API 35 and API 36.1, including four angled exits, post rebounds and bounded escape recovery |
@@ -30,8 +38,9 @@ evidence. The selected policies improve verified returns from 41% to 96.5%
 on the matched 200-shot Insane-delay panel. Full match results are in
 [difficulty.json](difficulty.json).
 
-Real-phone battery/thermal/touch latency, beginner/expert human labels, and
-release signing credentials are unavailable. The delivered APK/AAB use the
+Real-phone battery/thermal/touch-latency measurements, beginner/expert human
+labels, and release signing credentials remain unverified. A production APK
+is now installed on the user's OnePlus for playtesting. The delivered APK/AAB use the
 debug key; no store publication is performed.
 
 Builds, training runs, and raw logs are ignored. This file records measured

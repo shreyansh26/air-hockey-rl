@@ -85,6 +85,7 @@ class Device:
         while time.monotonic() < deadline:
             focus = self.adb("shell", "dumpsys", "window")
             if any("mCurrentFocus=" in line and self.package in line for line in focus.splitlines()):
+                time.sleep(0.5)  # Let Android's activity transition finish before injecting a tap.
                 return
             time.sleep(0.2)
         raise AssertionError("App never acquired Android input focus")

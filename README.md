@@ -4,8 +4,10 @@ A portrait Godot air-hockey game for the web and native Android. First to seven,
 finger-follow touch or keyboard input, pause/rematch, three table finishes, independent puck
 and paddle colors, local settings, offline assets, and small local PPO actors.
 
-Version 0.1.1 fills portrait displays with the table and places scores on the
-board. Paddles remain controllable while the centered puck waits for a serve:
+Version 0.1.1 maximizes the table with round pieces and places scores on the
+board. The app uses immersive edge-to-edge display with no header or instruction
+footer. Tall phones keep space above and below the proportional court. Paddles
+remain controllable while the centered puck waits for a serve:
 0.7 seconds on a new match, then a 0.55-second goal fade and 0.45-second re-serve.
 Opening serves choose either player randomly; later serves go to the player
 who conceded. Customization shows live previews and color/finish swatches.
@@ -170,9 +172,9 @@ and metric definitions are recorded in [the validation report](validation/STATUS
 contains bodies, controls, drawing, state history and tiny actor inference.
 `resources/physics.tres` holds frozen physical constants. Gameplay renders an
 unscaled isolated `World2D` through a viewport texture; resizing the display
-never rescales the physics. Portrait presentation stretches the texture to
-fit the screen with the same invertible mapping for touch; body artwork and
-its collider projection stay aligned. Wide windows preserve the table aspect.
+never rescales the physics. Presentation uniformly fits the texture to the
+screen with the same invertible mapping for touch; circles remain round and
+body artwork stays aligned with its collider projection on every device.
 The unchanged logical dimensions, body motors and trained weights require no
 retraining for this display change. `models/` holds deployment assets. `training/`
 contains the headless bridge and Python tools; `checks/` holds runnable

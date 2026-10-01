@@ -30,11 +30,9 @@ func _run() -> void:
 		check(main.pause_button.size.y >= 74, "Pause must keep its touch target")
 		for point in [Vector2.ZERO, Vector2(600, 0), Vector2(0, 1000), Vector2(600, 1000), Vector2(300, 750)]:
 			check(main.screen_to_table(main.table_to_screen(point)).distance_to(point) < 0.001, "Touch transform mismatch")
-		if viewport.x <= viewport.y:
-			check(main.arena_sprite.position == Vector2.ZERO, "Portrait table must start at display edge")
-			check((Vector2(680, 1080) * main.table_stretch).distance_to(viewport) < 0.001, "Portrait table must fill display")
-		else:
-			check(is_equal_approx(main.table_stretch.x, main.table_stretch.y), "Wide desktop table should keep its aspect")
+		check(is_equal_approx(main.table_stretch.x, main.table_stretch.y), "Puck and paddles must stay circular")
+		var display_size: Vector2 = Vector2(680, 1080) * main.table_stretch
+		check(is_equal_approx(display_size.x, viewport.x) or is_equal_approx(display_size.y, viewport.y), "Court must fill at least one display dimension")
 		check(main.arena.scale == Vector2.ONE and main.arena.puck.scale == Vector2.ONE and main.arena.paddles[0].scale == Vector2.ONE, "Display stretch must not scale physics")
 		check(Rect2(Vector2.ZERO, viewport).encloses(main.overlay.get_rect()), "Menu clipped")
 	main.touch_controls = true
