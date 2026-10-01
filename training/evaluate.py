@@ -28,7 +28,10 @@ def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
     env = make_env(arenas=args.arenas, processes=args.processes, seed=seed,
                    delay=bundle["levels"][bottom]["delay_ticks"], log_dir=ROOT / "training/runs/evaluation")
     learner = PPO.load(bundle["levels"][bottom]["checkpoint"], device="cpu")
-    scripted = top in ["intercept", "delayed_chase", "puck_chase", "center", "chase"]
+    style = top.removesuffix("_120")
+    if style == "puck_follow":
+        style = "puck_chase"
+    scripted = style in ["intercept", "delayed_chase", "puck_chase", "center", "chase"]
     opponents = [] if scripted else [str(ROOT / bundle["levels"][top].get("actor_manifest", f"models/{top}/actor.json"))]
     env.env_method("configure", mode="rally", hit_reward=0, shaping=0, limit_ticks=args.max_decisions * 4 + 4,
                    opponent_mode="fixed", opponent_style=top if scripted else "intercept", opponent_delay=args.opponent_delay,
@@ -85,8 +88,11 @@ def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
                 "censored": censored, "win_rate": wins / max(1, wins + losses), "wilson_95": wilson(wins, wins + losses),
                 "mean_score_difference": float(np.mean(score_differences)) if score_differences else None,
                 "mean_match_seconds": float(np.mean(lengths)) / 30, "stalls": stalls, "points": points, "paddle_hits": hits,
-                "learner_side": learner_side, "opponent_delay_ticks": args.opponent_delay if top in ["delayed_chase", "puck_chase"] else 0 if scripted else bundle["levels"][top]["delay_ticks"],
-                "opponent_observation_scope": "puck_only" if top == "puck_chase" else "whole_world" if top == "delayed_chase" or not scripted else "instantaneous",
+                "learner_side": learner_side, "opponent_delay_ticks": args.opponent_delay if style in ["delayed_chase", "puck_chase"] else 0 if scripted else bundle["levels"][top]["delay_ticks"],
+                "opponent_observation_scope": "puck_only" if style == "puck_chase" else "whole_world" if style == "delayed_chase" or not scripted else "instantaneous",
+                "opponent_control_hz": 120 if top.endswith("_120") else 30,
+                "opponent_tracking_gain": 8 if top in ["puck_chase", "delayed_chase"] else 12 if scripted else None,
+                "opponent_target": "puck clamped to own half" if top == "puck_follow_120" else "behind reachable puck; guard when away" if style in ["puck_chase", "delayed_chase"] else top,
                 "artificial_rally_timeouts": rally_timeouts, "duration_scope": "active rally simulation; excludes countdown and goal presentation",
                 "wall_seconds": time.perf_counter() - started, "replay": replays}
     finally:
@@ -151,7 +157,7 @@ if __name__ == "__main__":
     parser.add_argument("--arenas", type=int, default=16)
     parser.add_argument("--processes", type=int, default=1)
     parser.add_argument("--max-decisions", type=int, default=9000)
-    parser.add_argument("--baselines", nargs="+", choices=["intercept", "delayed_chase", "puck_chase", "chase", "center"], default=["intercept"])
+    parser.add_argument("--baselines", nargs="+", choices=["intercept", "delayed_chase", "puck_chase", "chase", "center", "intercept_120", "puck_chase_120", "puck_follow_120"], default=["intercept"])
     parser.add_argument("--opponent-delay", type=int, default=22)
     parser.add_argument("--baseline-only", action="store_true")
     parser.add_argument("--output", default=str(ROOT / "validation/difficulty.json"))

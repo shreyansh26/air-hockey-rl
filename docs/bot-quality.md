@@ -258,6 +258,37 @@ zero-delay chaser receives current puck and paddle state; the learned actor
 still receives its delayed world history. These are comparisons against the
 implemented chaser, not proof against every programmatic strategy.
 
+The primary tournament runs scripted opponents at the learner's 30 Hz command
+cadence. The human pointer controller recomputes its velocity command at 120 Hz.
+A stricter follow-up tests that faster controller with gain 12 and current own
+paddle feedback, while the learned actor keeps its 30 Hz cadence and 83 ms
+world-observation delay:
+
+| 120 Hz opponent | Insane wins | Wilson 95% interval |
+| --- | ---: | ---: |
+| Instantaneous strong interceptor | 383/400 (95.75%) | 93.30–97.33% |
+| Zero-delay chaser, behind reachable puck / guard when away | 399/400 (99.75%) | 98.60–99.96% |
+| Literal zero-delay puck follower, target clamped to its half | 400/400 (100%) | 99.05–100% |
+| Literal 250 ms puck follower, target clamped to its half | 400/400 (100%) | 99.05–100% |
+
+Every row uses 200 matches on each side, without censoring or artificial rally
+resets. The literal follower targets the sensed puck throughout the table;
+it neither prepares a bank shot nor returns to guard when the puck is away.
+It uses the actual human `Arena.drive_to` motor. The baseline can react every
+physics tick, while the neural actor still acts once per four ticks.
+This directly tests the user's proposed programmatic follower.
+
+Evidence: [faster interception/chasing](../validation/human-rate-baselines.json),
+[literal current-puck following](../validation/puck-follow-120-0.json), and
+[literal delayed following](../validation/puck-follow-120-30.json). These test
+controller robustness, not an isolated frequency ablation: the legacy delayed
+chaser uses gain 8; the new follower also changes the away-puck target rule.
+Bridge checks verify all four real tick updates and physical pursuit of the
+half boundary. The nominal episode limit also accepts the full 900-second
+match budget instead of silently capping it to 300 seconds. Earlier accepted
+cohorts observed zero artificial rally resets, so that cap did not affect their
+completed results.
+
 The confidence intervals establish this ranking against the fixed evaluation
 panel. They do not certify beginner/expert human difficulty, every possible
 scripted exploit, or seed variance under a matched training budget. Those

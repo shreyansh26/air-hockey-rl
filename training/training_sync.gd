@@ -154,7 +154,7 @@ func _handle(message: Dictionary) -> void:
 				if controller.learner_side == 1 and controller.mode != "rally":
 					fail("Top-side evaluation requires normal rallies")
 					return
-				controller.limit_ticks = clampi(int(message.get("limit_ticks", controller.limit_ticks)), 4, 36000)
+				controller.limit_ticks = maxi(int(message.get("limit_ticks", controller.limit_ticks)), 4)
 				controller.shaping = clampf(float(message.get("shaping", controller.shaping)), 0, 0.1)
 				controller.gamma = clampf(float(message.get("gamma", controller.gamma)), 0.9, 0.9999)
 				controller.hit_reward = clampf(float(message.get("hit_reward", controller.hit_reward)), 0, 0.1)
@@ -227,6 +227,8 @@ func _reply_step() -> void:
 	var infos := []
 	for controller in controllers:
 		var info := {"physics_ticks": controller.episode_ticks, "hits": controller.arena.contacts[controller.learner_side], "winner": controller.winner, "stalls": controller.stalls, "drill_success": controller.drill_success, "verified_return": controller.verified_return, "shot_type": controller.shot_type, "mode": controller.active_mode, "opponent_style": "actor" if controller.opponent else controller.opponent_style}
+		info["opponent_updates"] = controller.opponent_updates
+		info["episode_limit_ticks"] = controller.limit_ticks
 		var final_obs := Array(controller.observation())
 		rewards.append(controller.finish_step())
 		terminated.append(controller.terminated)

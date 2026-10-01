@@ -9,27 +9,28 @@
   "independent_worlds": "passed",
   "child_cleanup": "passed",
   "nominal_serve_history": "passed",
+  "human_rate_baselines": "passed",
   "batch_benchmarks": [
     {
       "arenas": 16,
       "transitions": 2048,
-      "seconds": 1.2492018330085557,
-      "transitions_per_second": 1639.4468418827348,
-      "simulation_seconds_per_wall_second_per_arena": 3.415514253922364
+      "seconds": 0.8965642499970272,
+      "transitions_per_second": 2284.27577834694,
+      "simulation_seconds_per_wall_second_per_arena": 4.758907871556126
     },
     {
       "arenas": 32,
       "transitions": 4096,
-      "seconds": 1.9517812079866417,
-      "transitions_per_second": 2098.595879107385,
-      "simulation_seconds_per_wall_second_per_arena": 2.186037374070193
+      "seconds": 1.7557442919933237,
+      "transitions_per_second": 2332.9137498432347,
+      "simulation_seconds_per_wall_second_per_arena": 2.4301184894200363
     },
     {
       "arenas": 64,
       "transitions": 8192,
-      "seconds": 9.947710166015895,
-      "transitions_per_second": 823.5060997239462,
-      "simulation_seconds_per_wall_second_per_arena": 0.42890942693955536
+      "seconds": 3.198009582993109,
+      "transitions_per_second": 2561.5933246619206,
+      "simulation_seconds_per_wall_second_per_arena": 1.3341631899280837
     }
   ],
   "device": "cpu",

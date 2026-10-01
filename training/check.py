@@ -49,6 +49,18 @@ def main():
         assert abs(travel - 120 / 30) < 0.05, travel
         time.sleep(0.05)
         assert raw.client.command("inspect")["states"][0]["ticks"] == 4
+        env.env_method('configure', limit_ticks=108004)
+        for style in ['intercept_120', 'puck_chase_120', 'puck_follow_120']:
+            env.env_method('configure', opponent_mode='fixed', opponent_style=style)
+            raw.client.command('fixture', case='travel', index=0)
+            _, _, _, fast_infos = env.step(np.zeros((2, 2), np.float32))
+            assert fast_infos[0]['opponent_updates'] == 5  # Initial command and all four real ticks.
+            assert fast_infos[0]['episode_limit_ticks'] == 108004  # No hidden 300-second cap below the 900-second match horizon.
+            if style == 'puck_follow_120':
+                for _ in range(11):
+                    env.step(np.zeros((2, 2), np.float32))
+                assert raw.client.command('inspect')['states'][0]['opponent'][1] > 240  # Pursues the half boundary rather than returning to guard.
+        env.env_method('configure', opponent_mode='mixed', opponent_style='intercept')
         env.env_method("configure", mode="rally", learner_side=1, evaluation_match=True, shaping=0)
         obs = env.reset()
         assert abs(obs[0, 41] - 0.66) < 0.00001
@@ -123,7 +135,7 @@ def main():
     report = {"pendulum_ppo": "passed", "godot_ppo_resume": "passed", "batch_dtype_reset_terminal": "passed",
               "terminal_mid_action": "passed", "exact_four_ticks": "passed", "travel": travel,
               "frozen_while_waiting": "passed", "independent_worlds": "passed", "child_cleanup": "passed",
-              "nominal_serve_history": "passed",
+              "nominal_serve_history": "passed", "human_rate_baselines": "passed",
               "batch_benchmarks": timings, "device": "cpu", "torch_threads": 1}
     path = ROOT / "validation/bridge.json"
     path.write_text(json.dumps(report, indent=2) + "\n")

@@ -10,6 +10,7 @@ var delay_ticks := 10
 var mode := "defense"
 var opponent_style := "center"
 var opponent_delay := 22
+var opponent_updates := 0
 var shot_type := "serve"
 var opponents: Array[String] = []
 var opponent: RefCounted
@@ -59,6 +60,7 @@ func reset_episode() -> void:
 	contact_credit = false
 	drill_success = false
 	verified_return = false
+	opponent_updates = 0
 	active_mode = mode
 	if mode == "mixed":
 		active_mode = ["defense", "attack", "rally"][rng.randi_range(0, 2)]
@@ -129,6 +131,8 @@ func set_action(action: Vector2) -> void:
 		var opponent_action: Vector2 = opponent.predict(opponent_history.encode(opponent.delay_ticks))
 		opponent_history.previous_action = opponent_action
 		arena.paddles[1 - learner_side].set_command(-opponent_action if learner_side == 0 else opponent_action)
+	elif opponent_style in ["intercept_120", "puck_chase_120", "puck_follow_120"]:
+		_fast_opponent()
 	elif opponent_style in ["delayed_chase", "puck_chase"]:
 		var delayed := opponent_history.encode(opponent_delay)
 		var observed_puck := Vector2((delayed[36] + 1) * 300, (delayed[37] + 1) * 500)
@@ -144,6 +148,18 @@ func set_action(action: Vector2) -> void:
 	else:
 		arena.baseline(1 - learner_side, opponent_style)
 
+func _fast_opponent() -> void:
+	opponent_updates += 1
+	if opponent_style == "intercept_120":
+		arena.baseline(1 - learner_side, "intercept")
+	else:
+		var delayed := opponent_history.encode(opponent_delay)
+		var puck := Vector2((delayed[36] + 1) * 300, (delayed[37] + 1) * 500)
+		var target := puck if opponent_style == "puck_follow_120" else puck + Vector2(0, 30) if puck.y > 500 else Vector2(300, 840)
+		if learner_side == 0:
+			target = Vector2(600, 1000) - target
+		arena.drive_to(1 - learner_side, target) # Same 120 Hz gain-12 controller as human dragging.
+
 func observation() -> PackedFloat32Array:
 	return history.encode(delay_ticks)
 
@@ -152,6 +168,8 @@ func _physics_process(_delta: float) -> void:
 		return
 	episode_ticks += 1
 	capture_history()
+	if not opponent and opponent_style in ["intercept_120", "puck_chase_120", "puck_follow_120"]:
+		_fast_opponent()
 	var puck_y: float = arena.puck.position.y if learner_side == 0 else 1000 - arena.puck.position.y
 	var puck_vy: float = arena.puck.linear_velocity.y * (1 if learner_side == 0 else -1)
 	if contact_credit and puck_y < 480 and puck_vy < -100:
