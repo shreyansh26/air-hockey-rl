@@ -1,4 +1,5 @@
 """Reproduce the diagnosis figure from retained checkpoint/probe evidence."""
+import argparse
 import json
 from pathlib import Path
 
@@ -10,7 +11,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def main():
+def main(suffix="v3", output="validation/quality-analysis.png"):
     fig, axes = plt.subplots(1, 3, figsize=(15, 5), constrained_layout=True)
     fig.suptitle("Bot quality: credit horizon, basic control, and a real incoming shot", fontsize=15)
     colors = ["#c45355", "#df9a35", "#559fc1", "#238b78"]
@@ -20,13 +21,16 @@ def main():
     axes[0].set(xlabel="Seconds until a +1 goal", ylabel="Discount multiplier", ylim=(0, 1.05), title="30 Hz decisions")
     axes[0].legend(frameon=False)
     names = ["Original PPO", "Warm start", "Revised PPO", "Selected Insane"]
-    files = ["quality-before-v3", "quality-bootstrap-v3", "quality-ppo-v3", "quality-selected-v3"]
+    files = [f"quality-{stage}-{suffix}" for stage in ["before", "bootstrap", "ppo", "selected"]]
     reports = [json.loads((ROOT / f"validation/{name}.json").read_text()) for name in files]
+    assert len({tuple(m[key] for key in ["physics_hash", "scenario_version", "seed", "delay_ticks"]) for m in reports}) == 1, "Probe rules, scenario, seeds, and delays must match"
+    panel = reports[0]["defense"]
+    assert all(m["defense"]["world_quotas"] == panel["world_quotas"] and {k: v["episodes"] for k, v in m["defense"]["shot_groups"].items()} == {k: v["episodes"] for k, v in panel["shot_groups"].items()} for m in reports), "Shot panels must match"
     x = np.arange(4)
     axes[1].bar(x - 0.24, [m["defense"]["contact_rate"] * 100 for m in reports], 0.24, color=colors[2], label="Real puck contact")
     axes[1].bar(x, [m["defense"]["verified_returns"] / m["defense"]["episodes"] * 100 for m in reports], 0.24, color=colors[3], label="Verified return")
     axes[1].bar(x + 0.24, [m["defense"]["near_boundary_fraction"] * 100 for m in reports], 0.24, color=colors[0], label="Near boundary")
-    axes[1].set(xticks=x, xticklabels=names, ylabel="Percent", ylim=(0, 110), title="200 held-out incoming-shot episodes")
+    axes[1].set(xticks=x, xticklabels=names, ylabel="Percent", ylim=(0, 110), title=f"{panel['episodes']} held-out incoming-shot episodes")
     axes[1].legend(frameon=False, loc="upper left", fontsize=8)
     axes[1].tick_params(axis="x", labelsize=9)
     for i in [0, 3]:
@@ -48,8 +52,12 @@ def main():
     for ax in axes:
         ax.spines[["top", "right"]].set_visible(False)
         ax.grid(alpha=0.15)
-    fig.savefig(ROOT / "validation/quality-analysis.png", dpi=170)
+    fig.savefig(ROOT / output, dpi=170)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--suffix", default="v3")
+    parser.add_argument("--output", default="validation/quality-analysis.png")
+    args = parser.parse_args()
+    main(args.suffix, args.output)

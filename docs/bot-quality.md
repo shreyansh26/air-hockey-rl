@@ -1,5 +1,11 @@
 # Bot quality: diagnosis, rewards, and rollout design
 
+The matched probes and tournament below use the corrected goal rules, physics
+hash `a4aeb4eb…`. All four selected checkpoints retain their original training
+hash `924926ef…`; their exact weights have been requalified under the new rules.
+Historical reports retain their own rule hashes and must not be mixed with
+this comparison. Platform status is recorded in [implementation status](../validation/STATUS.md).
+
 ## What is wrong
 
 The original actors are not qualified opponents. Their exports are numerically
@@ -13,10 +19,10 @@ No drill reward or early success termination is enabled in these evaluations.
 
 | Actor | Incoming shots with a real contact | Verified returns | Decisions near a boundary | Rally points vs strong interceptor | Unscored rally endings |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Original 5.03M PPO | 105/200 (52.5%) | 82/200 (41%) | 81.1% | 23 scored / 157 conceded | 20 |
-| Demonstration warm start | 193/200 (96.5%) | 190/200 (95%) | 1.96% | 67 / 104 | 29 |
-| Warm start + 1.51M revised PPO | 195/200 (97.5%) | 191/200 (95.5%) | 3.05% | 90 / 81 | 29 |
-| Selected Insane, +4.03M coherent-exploration PPO | 195/200 (97.5%) | 193/200 (96.5%) | 10.6% | 107 / 40 | 53 |
+| Original 5.03M PPO | 105/200 (52.5%) | 82/200 (41%) | 79.47% | 26 scored / 167 conceded | 7 |
+| Demonstration warm start | 193/200 (96.5%) | 190/200 (95%) | 1.31% | 78 / 119 | 3 |
+| Warm start + 1.51M revised PPO | 195/200 (97.5%) | 191/200 (95.5%) | 2.71% | 104 / 96 | 0 |
+| Selected Insane, +4.03M coherent-exploration PPO | 195/200 (97.5%) | 193/200 (96.5%) | 11.42% | 132 / 48 | 20 |
 
 Version 3 assigns each world a fixed episode quota and reseeds separately for
 each task. Faster episodes cannot select extra initial states. The defense
@@ -34,18 +40,18 @@ still end in a concession; the full outcome counts are retained.
 The boundary statistic decodes the delayed paddle position. It measures camping,
 not illegal movement. A contact is also not automatically a successful save.
 Full point outcomes, stalls, and time limits remain separate metrics. The selected
-actor's 72.8% win fraction among decided rally points is **not** an 80%
-first-to-seven match win rate. Its 53 unscored 30-second rallies also matter.
+actor's 73.3% win fraction among decided rally points is **not** an 80%
+first-to-seven match win rate. Its 20 unscored rallies also matter.
 The final four policies are evaluated separately in full nominal matches.
 
-Evidence: [before](../validation/quality-before-v3.json),
-[warm start](../validation/quality-bootstrap-v3.json),
-[revised PPO](../validation/quality-ppo-v3.json),
-[selected Insane](../validation/quality-selected-v3.json).
+Evidence: [before](../validation/quality-before-current-v3.json),
+[warm start](../validation/quality-bootstrap-current-v3.json),
+[revised PPO](../validation/quality-ppo-current-v3.json),
+[selected Insane](../validation/quality-selected-current-v3.json).
 The earlier panels are retained separately and must not be compared directly
 to version 3.
 
-![Matched control and trajectory comparison](../validation/quality-analysis.png)
+![Matched control and trajectory comparison](../validation/quality-analysis-current.png)
 
 ## Why the original learning setup was insufficient
 
@@ -209,17 +215,18 @@ training environment as a Python approximation or retain every training frame.
 
 ## Fixes already made and next promotion gates
 
-The selected bundle now passes the automated match gates. Each row below uses
+The selected bundle passed a fresh tournament after the goal-rule correction.
+Each row below uses
 400 completed first-to-seven matches, balanced across table sides, with
 held-out serve seeds. No match was censored and no artificial episode limit
 restarted a live rally. The match censoring horizon was 900 active seconds.
 
 | Matchup | Stronger actor wins | Win rate | Wilson 95% interval |
 | --- | ---: | ---: | ---: |
-| Medium vs Easy | 261/400 | 65.25% | 60.46–69.75% |
+| Medium vs Easy | 258/400 | 64.5% | 59.69–69.03% |
 | Hard vs Medium | 378/400 | 94.5% | 91.81–96.34% |
-| Insane vs Hard | 371/400 | 92.75% | 89.78–94.90% |
-| Insane vs strong instantaneous interceptor | 388/400 | 97% | 94.83–98.28% |
+| Insane vs Hard | 373/400 | 93.25% | 90.36–95.32% |
+| Insane vs strong instantaneous interceptor | 387/400 | 96.75% | 94.52–98.09% |
 | Insane vs delayed puck-chaser | 400/400 | 100% | 99.05–100% |
 
 The puck-chaser observes the puck with a 22-tick (183 ms) delay while using its
@@ -229,10 +236,21 @@ delaying its own pose along with the puck. The learned Insane actor still sees
 the entire world with its shipped 10-tick delay; no current-state production
 planner assists it.
 
+Additional current-rule cohorts tested the same puck-only chaser at zero delay
+and 30 ticks (250 ms): Insane won 400/400 completed matches in each cohort,
+balanced across both sides. See [instantaneous chasing](../validation/puck-chase-goal-fix-0.json)
+and [250 ms chasing](../validation/puck-chase-goal-fix-30.json). The
+zero-delay chaser receives current puck and paddle state; the learned actor
+still receives its delayed world history. These are comparisons against the
+implemented chaser, not proof against every programmatic strategy.
+
 The confidence intervals establish this ranking against the fixed evaluation
 panel. They do not certify beginner/expert human difficulty, every possible
 scripted exploit, or seed variance under a matched training budget. Those
-remain separate questions. See [full match evidence](../validation/difficulty.json).
+remain separate questions. See [current full match evidence](../validation/difficulty.json).
+The [earlier tournament](../validation/difficulty-before-goal-fix.json) is retained
+with its original rule hash. Promotion requires the current physics and all
+four weight hashes to match the new report.
 
 Two implementation issues were also fixed: curriculum coefficients now update
 when two successive phases share the same mode, and loading an SB3 checkpoint
@@ -240,7 +258,7 @@ applies the requested PPO hyperparameters while preserving optimizer state.
 Potential shaping uses the same gamma as PPO. Runnable checks cover reward
 annealing, a physical drill return, exact stepping, and resumed settings.
 
-The remaining behavioral and calibration checks are:
+The promotion and follow-up checks are:
 
 1. Beat delayed chasers at several fixed delays, plus center defense, strong
    interception, and frozen actors. Use held-out seeds and both table sides.
@@ -255,10 +273,9 @@ The remaining behavioral and calibration checks are:
 6. Promote by measured match quality, then repeat parity and platform tests for
    the selected weight hashes. Human skill labels remain unverified until played.
 
-Next experiments should improve attack placement and coherent exploration
-before expanding the model or adding an inference planner. A training-only
-bank-shot teacher and stock PPO's state-dependent exploration are reasonable
-bounded comparisons. Only measured improvements should enter the release.
+Further experiments should improve attack placement and long-rally recovery
+before expanding the model or adding an inference planner. Only measured
+improvements should enter the release.
 
 The completed bounded follow-up uses stock SB3 generalized state-dependent
 exploration, refreshing its noise every eight decisions (267 ms). This explores
@@ -271,6 +288,21 @@ deployment delays of 10/14/22/30 ticks and seeds 43/47/53/59. Each completed
 so this comparison does not isolate seed variance from delay sensitivity.
 The four exported checkpoints are retained under `training/checkpoints/`.
 
+The selected strategic runs use 512 decisions per arena, gamma=0.999,
+lambda=0.995, learning rate 0.00015, clip range 0.15, five PPO epochs, batch
+size 512, and target KL 0.015. Their first million rally decisions retain a
+0.03 first-contact bonus and 0.04 potential scale; subsequent rally training
+removes the contact bonus and reduces the potential scale to 0.02. This differs
+from the conservative 1.51M run described above. Neither shaping term is used
+to judge held-out play.
+
+These stages are not a controlled reward ablation: demonstration warm start,
+PPO budget, exploration, and delay differ. The warm start alone supplies most
+of the initial defense improvement. PPO then improves the observed attack
+outcomes and full-match strength. To attribute gains to a reward term, hold
+initial weights, delay, opponents, seed panel, and decision budget fixed while
+changing only that term, and repeat training under multiple seeds.
+
 The strategic curriculum still limits training rallies to 12 seconds. Longer
 held-out volleys therefore test states that were weakly covered in training.
 If full matches show excessive timeouts or weak attack, the next bounded
@@ -282,3 +314,32 @@ history as gameplay. No artificial episode limit restarts a live rally before
 the match censoring horizon. Match durations count active rally simulation;
 the game's frozen countdown and goal presentation are excluded. Censored
 matches remain explicit failures of the completeness gate.
+
+A rollout also needs immutable rule provenance. A goal-detector correction
+changes which trajectories receive +1/-1, even when body integration and actor
+weights remain unchanged. Retain the original checkpoint's training physics
+hash. Re-evaluate its exact checkpoint and weight hashes under the corrected
+rules before allowing export or resume; never relabel old episodes as new-rule
+evidence. A fresh qualified report is the compatibility evidence for a rule-only
+correction. Changes to masses, motor limits, observations, or integration need
+new training and the shared regression checks.
+
+## Goal-rule correction and model compatibility
+
+The old goal check subtracted both puck and post radii after the whole puck
+passed the end line. The real Godot fixture `(365, 30), (800, -2200)` clears
+the post and crosses at x=375.91, outside the old 226–374 scoring strip. It
+continued to y=-536 without a score; the mirrored bottom shot reached y=1536.
+The corrected check uses the mouth clearance after full crossing. Colliders
+still enforce post hits. Unexpected escapes end visibly in a re-serve.
+
+The corrected runtime passes 113 physics cases on desktop, web and both
+Android AVDs. The goal offset/fade only changes drawing; the body stays frozen
+while the puck enters the pocket, disappears, and returns for a fresh serve.
+Collision geometry, motors, speeds, masses, damping and observation encoding
+are unchanged. Existing weights were requalified over 2,000 complete matches,
+then re-exported with the exact checkpoint and both physics hashes recorded.
+Export/resume rejects a different checkpoint or failed compatibility report.
+[Original tournament](../validation/difficulty-before-goal-fix.json),
+[current tournament](../validation/difficulty.json),
+[goal-flow check](../validation/goal-flow.json).

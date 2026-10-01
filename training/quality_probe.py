@@ -63,7 +63,10 @@ def probe(args):
                 "mean_seconds": ticks / 120 / args.episodes, "near_boundary_fraction": boundary / decisions,
                 "wall_seconds": time.perf_counter() - started}
             if args.trace:
-                report[mode]["trajectory"] = trace
+                trajectory = Path(args.output).with_name(f"{Path(args.output).stem}-{mode}-trajectory.json")
+                trajectory.parent.mkdir(parents=True, exist_ok=True)
+                trajectory.write_text("[\n" + ",\n".join(json.dumps(row, separators=(",", ":")) for row in trace) + "\n]\n")
+                report[mode]["trajectory_file"] = str(trajectory)
             print(json.dumps({key: value for key, value in report[mode].items() if key != "trajectory"}), flush=True)
     finally:
         env.close()
