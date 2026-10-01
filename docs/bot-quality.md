@@ -53,6 +53,12 @@ to version 3.
 
 ![Matched control and trajectory comparison](../validation/quality-analysis-current.png)
 
+Reproduce the figure from the retained summaries and actual trajectories:
+
+```sh
+uv run --project training python training/plot_quality.py --suffix current-v3 --output validation/quality-analysis-current.png
+```
+
 ## Why the original learning setup was insufficient
 
 ### Credit arrives too late
@@ -140,6 +146,11 @@ the bot's motor limits.
 | Command smoothness | Small squared change cost | Keep much smaller than a goal; audit cumulative cost |
 | Stall | Logged separately; no invented game point | Reject policies with pathological stall rates |
 
+The implemented smoothness coefficient is 0.00005. For the two clipped command
+components, the maximum cost is 0.0004 per decision, or 0.144 over a 12-second
+training rally at 30 Hz. This bounds its scale relative to the +/-1 outcome;
+typical coherent strokes cost much less.
+
 Current potential:
 
 `Phi = shaping * (0.4 * signed_puck_progress - 0.6 * normalized_alignment_error)`
@@ -207,6 +218,9 @@ The revised run uses 512 steps per arena, 64 arenas, gamma=0.999,
 lambda=0.995, learning rate 5e-5, clip range 0.1, and target KL 0.01. This
 extends each causal window to 17.07 seconds while limiting movement away from
 the warm-start actor. It is a tested starting point, not an optimized recipe.
+This is a collection window per arena, not a guaranteed continuous rally:
+the current 12-second rally cap cuts trajectories earlier. More parallel
+arenas or a larger buffer do not remove that episode cap.
 
 Trajectory diagnostics save actual puck/paddle state, contacts, delayed actor
 input, and chosen action at 30 Hz for a small number of episodes. Full 120 Hz
