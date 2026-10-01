@@ -3,6 +3,7 @@ extends Node2D
 var finish := 0
 const SKINS = [preload("res://resources/skins/atlantic.tres"), preload("res://resources/skins/evergreen.tres"), preload("res://resources/skins/graphite.tres")]
 var surface: ColorRect
+var surface_cache: SubViewport
 
 func _ready() -> void:
 	surface = ColorRect.new()
@@ -20,14 +21,25 @@ void fragment() {
 	var mat := ShaderMaterial.new()
 	mat.shader = shader
 	surface.material = mat
-	add_child(surface)
-	move_child(surface, 0)
+	# The perforated finish is static. Bake on selection instead of shading it every frame.
+	surface_cache = SubViewport.new()
+	surface_cache.size = Vector2i(600, 1000)
+	surface_cache.disable_3d = true
+	surface_cache.world_2d = World2D.new()
+	add_child(surface_cache)
+	surface_cache.add_child(surface)
+	var cached := Sprite2D.new()
+	cached.texture = surface_cache.get_texture()
+	cached.centered = false
+	cached.show_behind_parent = true
+	add_child(cached)
 	apply_finish(finish)
 
 func apply_finish(value: int) -> void:
 	finish = clampi(value, 0, SKINS.size() - 1)
 	if surface:
 		surface.material.set_shader_parameter("tint", SKINS[finish].tint)
+		surface_cache.render_target_update_mode = SubViewport.UPDATE_ONCE
 	queue_redraw()
 
 func _draw() -> void:

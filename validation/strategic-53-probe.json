@@ -1,0 +1,32 @@
+{
+  "scenario_version": 2,
+  "rally_opponent": "intercept",
+  "opponent_delay_ticks": 22,
+  "checkpoint": "training/runs/strategic-53/final.zip",
+  "checkpoint_sha256": "68310212533b6adebd0157b76e3b066a808675e0b7852497c79a936b6fe1baa3",
+  "teacher": false,
+  "delay_ticks": 22,
+  "physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
+  "defense": {
+    "episodes": 200,
+    "episodes_with_puck_contact": 175,
+    "contact_rate": 0.875,
+    "scored": 127,
+    "conceded": 49,
+    "timeouts_or_stalls": 24,
+    "mean_seconds": 8.768833333333333,
+    "near_boundary_fraction": 0.35271493212669686,
+    "wall_seconds": 6.012402148975525
+  },
+  "rally": {
+    "episodes": 200,
+    "episodes_with_puck_contact": 193,
+    "contact_rate": 0.965,
+    "scored": 48,
+    "conceded": 131,
+    "timeouts_or_stalls": 21,
+    "mean_seconds": 10.691083333333333,
+    "near_boundary_fraction": 0.3233154296875,
+    "wall_seconds": 7.082708000030834
+  }
+}

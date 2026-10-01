@@ -18,9 +18,9 @@
   "schema_hash": "86674845d34076e5fefec1e6ab67c2be160297227298903525568608672906d5",
   "physics_hz": 120,
   "action_ticks": 4,
-  "weights_sha256": "9d30c3057cabcea3aa640804a4588be34f32b08cbe739810cb81d8f5e2ab6507",
-  "checkpoint_sha256": "a49a2a056b2fae9113932adf8115e9d0ad52920fdb1326687f5a0ad974d6aae3",
-  "trained_transitions": 1003520,
+  "weights_sha256": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
+  "checkpoint_sha256": "68310212533b6adebd0157b76e3b066a808675e0b7852497c79a936b6fe1baa3",
+  "trained_transitions": 4030464,
   "difficulty": "medium",
   "delay_ticks": 22,
   "normalization": {
@@ -29,5 +29,37 @@
     "paddle_velocity": 1050,
     "position_clip": 1.1
   },
-  "quality": "candidate; see validation/difficulty.json"
+  "quality": "automated match gates passed; human skill labels unverified",
+  "training_provenance": {
+    "seed": 53,
+    "ppo": {
+      "learning_rate": 0.00015,
+      "n_steps": 512,
+      "batch_size": 512,
+      "n_epochs": 5,
+      "gamma": 0.999,
+      "gae_lambda": 0.995,
+      "clip_range": 0.15,
+      "ent_coef": 0.001,
+      "target_kl": 0.015,
+      "use_sde": true,
+      "sde_sample_freq": 8
+    },
+    "curriculum": [
+      {
+        "until": 1000000,
+        "mode": "rally",
+        "hit_reward": 0.03,
+        "shaping": 0.04
+      },
+      {
+        "until": 4000000,
+        "mode": "rally",
+        "hit_reward": 0,
+        "shaping": 0.02
+      }
+    ],
+    "warm_start": "training/runs/quality/final.zip",
+    "resume": null
+  }
 }

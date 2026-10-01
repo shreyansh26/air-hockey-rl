@@ -29,13 +29,13 @@ def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
                    delay=bundle["levels"][bottom]["delay_ticks"], log_dir=ROOT / "training/runs/evaluation")
     learner = PPO.load(bundle["levels"][bottom]["checkpoint"], device="cpu")
     scripted = top in ["intercept", "delayed_chase", "puck_chase", "center", "chase"]
-    opponents = [] if scripted else [str(ROOT / f"models/{top}/actor.json")]
-    env.env_method("configure", mode="rally", hit_reward=0, shaping=0, limit_ticks=36000,
+    opponents = [] if scripted else [str(ROOT / bundle["levels"][top].get("actor_manifest", f"models/{top}/actor.json"))]
+    env.env_method("configure", mode="rally", hit_reward=0, shaping=0, limit_ticks=args.max_decisions * 4 + 4,
                    opponent_mode="fixed", opponent_style=top if scripted else "intercept", opponent_delay=args.opponent_delay,
                    opponents=opponents, evaluation_match=True, learner_side=learner_side, drill_bonus=0)
     scores = np.zeros((env.num_envs, 2), int)
     durations = np.zeros(env.num_envs, int)
-    wins, losses, censored, stalls, points, hits = 0, 0, 0, 0, 0, 0
+    wins, losses, censored, stalls, points, hits, rally_timeouts = 0, 0, 0, 0, 0, 0, 0
     score_differences, lengths, replays = [], [], []
     quotas = np.full(env.num_envs, count // env.num_envs) + (np.arange(env.num_envs) < count % env.num_envs)
     completed = np.zeros(env.num_envs, int)
@@ -57,6 +57,7 @@ def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
                     winner = infos[i].get("winner", -1)
                     stalls += infos[i].get("stalls", 0)
                     hits += infos[i].get("hits", 0)
+                    rally_timeouts += int(infos[i].get("TimeLimit.truncated", False) and not infos[i].get("stalls", 0))
                     if winner >= 0:
                         scores[i, winner] += 1
                         points += 1
@@ -79,12 +80,14 @@ def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
                         restart.append(i)
             for index, observation in env.venv.restart_matches(restart).items():
                 obs[index] = observation
+        assert rally_timeouts == 0, "A live nominal rally must not be restarted by an artificial episode limit"
         return {"bottom": bottom, "top": top, "seed": seed, "requested_matches": count, "wins": wins, "losses": losses,
                 "censored": censored, "win_rate": wins / max(1, wins + losses), "wilson_95": wilson(wins, wins + losses),
                 "mean_score_difference": float(np.mean(score_differences)) if score_differences else None,
                 "mean_match_seconds": float(np.mean(lengths)) / 30, "stalls": stalls, "points": points, "paddle_hits": hits,
-                "learner_side": learner_side, "opponent_delay_ticks": args.opponent_delay if top in ["delayed_chase", "puck_chase"] else 0,
-                "opponent_observation_scope": "puck_only" if top == "puck_chase" else "whole_world" if top == "delayed_chase" else "instantaneous",
+                "learner_side": learner_side, "opponent_delay_ticks": args.opponent_delay if top in ["delayed_chase", "puck_chase"] else 0 if scripted else bundle["levels"][top]["delay_ticks"],
+                "opponent_observation_scope": "puck_only" if top == "puck_chase" else "whole_world" if top == "delayed_chase" or not scripted else "instantaneous",
+                "artificial_rally_timeouts": rally_timeouts, "duration_scope": "active rally simulation; excludes countdown and goal presentation",
                 "wall_seconds": time.perf_counter() - started, "replay": replays}
     finally:
         env.close()
@@ -93,6 +96,16 @@ def matchup(bundle, bottom, top, count, args, seed, learner_side=0):
 def main(args):
     torch.set_num_threads(1)
     bundle = json.loads(Path(args.manifest).read_text())
+    checked_levels = ["insane"] if args.baseline_only else list(bundle["levels"])
+    for level in checked_levels:
+        profile = bundle["levels"][level]
+        if sha256(Path(profile["checkpoint"]).read_bytes()).hexdigest() != profile["checkpoint_sha256"]:
+            raise ValueError("Evaluation checkpoint hash mismatch: " + level)
+        if not args.baseline_only:
+            path = ROOT / profile.get("actor_manifest", f"models/{level}/actor.json")
+            actor = json.loads(path.read_text())
+            if actor["weights_sha256"] != profile["weights_sha256"] or actor["delay_ticks"] != profile["delay_ticks"] or actor["physics_hash"] != bundle["physics_hash"]:
+                raise ValueError("Evaluation opponent/profile mismatch: " + level)
     reports, gates = [], {}
     levels = ["easy", "medium", "hard", "insane"]
     for i, (weaker, stronger) in enumerate([] if args.baseline_only else zip(levels, levels[1:])):

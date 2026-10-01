@@ -7,7 +7,7 @@ import numpy as np
 from stable_baselines3 import PPO
 import torch
 
-from common import ROOT, write_schema
+from common import ROOT, physics_hash, write_schema
 
 
 class Actor(torch.nn.Module):
@@ -22,6 +22,9 @@ class Actor(torch.nn.Module):
 
 def export(checkpoint, output, level="insane", delay=10):
     checkpoint, output = Path(checkpoint), Path(output)
+    recorded = checkpoint.parent / "config.json"
+    if not recorded.exists() or json.loads(recorded.read_text()).get("physics_hash") != physics_hash():
+        raise ValueError("Export requires a checkpoint with matching recorded physics")
     model = PPO.load(checkpoint, device="cpu")
     schema_path = write_schema()
     schema = json.loads(schema_path.read_text())
@@ -42,6 +45,8 @@ def export(checkpoint, output, level="insane", delay=10):
                 "checkpoint_sha256": sha256(checkpoint_path.read_bytes()).hexdigest(), "trained_transitions": model.num_timesteps,
                 "difficulty": level, "delay_ticks": delay, "normalization": schema["normalization"],
                 "quality": "candidate; see validation/difficulty.json"}
+    provenance = json.loads(recorded.read_text())
+    metadata["training_provenance"] = {key: provenance.get(key) for key in ["seed", "ppo", "curriculum", "warm_start", "resume"]}
     (output / "actor.json").write_text(json.dumps(metadata, indent=2) + "\n")
     torch.onnx.export(actor, torch.zeros(1, 52), output / "actor.onnx", input_names=["observation"],
                       output_names=["action"], dynamic_axes={"observation": {0: "batch"}, "action": {0: "batch"}},

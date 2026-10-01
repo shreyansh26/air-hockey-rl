@@ -69,7 +69,7 @@ class Device:
         except (ValueError, subprocess.CalledProcessError):
             previous = None
         self.adb("shell", "am", "force-stop", self.package)
-        self.adb("shell", "am", "start", "-n", self.package + "/com.godot.game.GodotApp")
+        self.foreground()
         state = self.wait(lambda s: s["state"] == "menu" and s.get("boot_id") != previous)
         self.adb("shell", "uiautomator", "dump", "/sdcard/glide-ui.xml")
         tree = ET.fromstring(self.adb("shell", "cat", "/sdcard/glide-ui.xml"))
@@ -78,6 +78,16 @@ class Device:
                 left, top, right, bottom = map(int, re.findall(r"\d+", node.get("bounds")))
                 self.adb("shell", "input", "tap", str((left + right) // 2), str((top + bottom) // 2))
         return state
+
+    def foreground(self):
+        self.adb("shell", "am", "start", "-W", "-n", self.package + "/com.godot.game.GodotApp")
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            focus = self.adb("shell", "dumpsys", "window")
+            if any("mCurrentFocus=" in line and self.package in line for line in focus.splitlines()):
+                return
+            time.sleep(0.2)
+        raise AssertionError("App never acquired Android input focus")
 
     def screenshot(self, name):
         path = ROOT / f"validation/screenshots/{name}.png"
@@ -88,8 +98,12 @@ class Device:
 
 def main(args):
     device = Device(args.serial, args.port)
+    manifest = json.loads(args.manifest.read_text())
     device.launch()
-    report = {"serial": args.serial, "resolution": [device.width, device.height], "levels": {}}
+    report = {"serial": args.serial, "resolution": [device.width, device.height],
+              "manifest": str(args.manifest), "physics_hash": manifest["physics_hash"], "levels": {}}
+    if args.apk:
+        report["apk_sha256"] = sha256(args.apk.read_bytes()).hexdigest()
     levels = ["Easy", "Medium", "Hard", "Insane"]
     for index, level in enumerate(levels):
         state = device.state()
@@ -97,8 +111,11 @@ def main(args):
         device.wait(lambda s: s["level"] == index)
         device.tap("Play")
         state = device.wait(lambda s: s["state"] == "rally")
-        assert state["model_hash"] != "prototype" and not state["model_error"]
-        device.wait(lambda s: s["contacts"][1] > 0, timeout=60)
+        assert state["model_hash"] == manifest["levels"][level.lower()]["weights_sha256"] and not state["model_error"]
+        # A passive human can leave the puck on its own half indefinitely.
+        # Present a legal incoming shot; the bot must use its real delayed actor.
+        device.command(type="shot")
+        contact = device.wait(lambda s: s["contacts"][1] > 0, timeout=60)
         state = device.wait(lambda s: s["state"] == "rally")
         before = state["paddle"]
         x = state["origin"][0] + before[0] * state["scale"]
@@ -114,14 +131,15 @@ def main(args):
         device.tap("Resume")
         device.wait(lambda s: s["state"] == "rally")
         device.adb("shell", "input", "keyevent", "3") # Android Home / focus loss.
-        device.adb("shell", "am", "start", "-n", device.package + "/com.godot.game.GodotApp")
+        device.foreground()
         device.wait(lambda s: s["state"] == "paused")
         device.tap("Resume")
         state = device.wait(lambda s: s["state"] == "rally")
         # Goal fixtures move the actual puck. They never write scores or invoke _goal.
         while max(state["scores"]) < 7:
+            previous_scores = state["scores"]
             device.command(type="goal", side=0)
-            state = device.wait(lambda s: s["state"] in ["goal", "results"])
+            state = device.wait(lambda s: s["scores"] != previous_scores)
             if state["state"] == "results":
                 break
             state = device.wait(lambda s: s["state"] == "rally")
@@ -132,7 +150,7 @@ def main(args):
         device.adb("shell", "input", "keyevent", "4") # Back pauses.
         device.wait(lambda s: s["state"] == "paused")
         device.tap("Menu")
-        report["levels"][level.lower()] = {"model_hash": state["model_hash"], "input_pause_goals_rematch_focus_back": "passed"}
+        report["levels"][level.lower()] = {"model_hash": state["model_hash"], "actual_bot_contacts": contact["contacts"][1], "input_pause_goals_rematch_focus_back": "passed"}
     device.tap("Customize")
     device.select("Atlantic", 1)
     device.select("Ice", 2)
@@ -168,6 +186,7 @@ def main(args):
     report["android_api"] = device.adb("shell", "getprop", "ro.build.version.sdk").strip()
     report["android_release"] = device.adb("shell", "getprop", "ro.build.version.release").strip()
     report["abi"] = device.adb("shell", "getprop", "ro.product.cpu.abi").strip()
+    report["renderer"] = device.adb("shell", "getprop", "ro.hardware.egl").strip()
     report["final_snapshot"] = state
     destination = ROOT / f"validation/android-{args.serial}.json"
     destination.write_text(json.dumps(report, indent=2) + "\n")
@@ -183,4 +202,6 @@ if __name__ == "__main__":
     parser.add_argument("--serial", required=True)
     parser.add_argument("--port", type=int, default=5038)
     parser.add_argument("--soak", action="store_true")
+    parser.add_argument("--manifest", type=Path, default=ROOT / "models/manifest.json")
+    parser.add_argument("--apk", type=Path)
     main(parser.parse_args())

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "dims": [
+    52,
+    64,
+    64,
+    2
+  ],
+  "activations": [
+    "tanh",
+    "tanh",
+    "clip"
+  ],
+  "matrix_order": "row-major",
+  "dtype": "little-endian-float32",
+  "parameters": 7682,
+  "physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
+  "schema_hash": "86674845d34076e5fefec1e6ab67c2be160297227298903525568608672906d5",
+  "physics_hz": 120,
+  "action_ticks": 4,
+  "weights_sha256": "d6e1e1238380a25b521aabea93515abf3a13361df6b49853c47020e96cc8a0e6",
+  "checkpoint_sha256": "edff858ea78f9b69781bfc48ffd8528470f4c582f64f44b86d2c8b72a05b34dc",
+  "trained_transitions": 2031616,
+  "difficulty": "frozen",
+  "delay_ticks": 30,
+  "normalization": {
+    "position": "(x/600*2-1,y/1000*2-1)",
+    "puck_velocity": 2300,
+    "paddle_velocity": 1050,
+    "position_clip": 1.1
+  },
+  "quality": "candidate; see validation/difficulty.json"
+}

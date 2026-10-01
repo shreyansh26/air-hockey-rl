@@ -26,6 +26,7 @@ var hit_reward := 0.05
 var shaping := 0.03
 var drill_bonus := 0.0
 var drill_success := false
+var verified_return := false
 var gamma := 0.99
 var potential := 0.0
 var active_mode := "defense"
@@ -57,6 +58,7 @@ func reset_episode() -> void:
 	stalls = 0
 	contact_credit = false
 	drill_success = false
+	verified_return = false
 	active_mode = mode
 	if mode == "mixed":
 		active_mode = ["defense", "attack", "rally"][rng.randi_range(0, 2)]
@@ -107,7 +109,10 @@ func reset_episode() -> void:
 		arena.puck.reset_at(point, Vector2(rng.randf_range(-100, 100), rng.randf_range(-50, 150)))
 	else:
 		shot_type = "serve"
-		arena.puck.linear_velocity = Vector2(rng.randf_range(-250, 250), 260 if serve == 0 else -260)
+		if evaluation_match:
+			arena.launch(serve) # Nominal held-out matches use the shipped serve primitive.
+		else:
+			arena.puck.linear_velocity = Vector2(rng.randf_range(-250, 250), 260 if serve == 0 else -260)
 	arena.last_position = arena.puck.position
 	history.reset(arena, learner_side)
 	opponent_history.reset(arena, 1 - learner_side)
@@ -147,7 +152,11 @@ func _physics_process(_delta: float) -> void:
 		return
 	episode_ticks += 1
 	capture_history()
-	if drill_bonus > 0 and active_mode in ["defense", "attack"] and contact_credit and arena.puck.position.y < 480 and arena.puck.linear_velocity.y < -100:
+	var puck_y: float = arena.puck.position.y if learner_side == 0 else 1000 - arena.puck.position.y
+	var puck_vy: float = arena.puck.linear_velocity.y * (1 if learner_side == 0 else -1)
+	if contact_credit and puck_y < 480 and puck_vy < -100:
+		verified_return = true
+	if drill_bonus > 0 and active_mode in ["defense", "attack"] and verified_return:
 		drill_success = true
 		terminated = true
 		reward += drill_bonus - potential

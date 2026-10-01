@@ -7,26 +7,45 @@ correct, but the learned control is poor. Increasing training age and decreasing
 observation delay did not establish stronger play.
 
 The user's observation of a bot wandering along the rails is supported by a
-held-out Godot probe. All three rows below use the same version-2 shot panel,
+held-out Godot probe. All four rows below use the same version-3 shot panel,
 seed 970001, 83 ms observation delay, unchanged physics, and 200 episodes per task.
 No drill reward or early success termination is enabled in these evaluations.
 
-| Actor | Incoming shots with a real paddle contact | Decisions near a boundary | Rally points vs strong interceptor | Non-scoring rally endings |
-| --- | ---: | ---: | ---: | ---: |
-| Original 5.03M PPO | 95/200 (47.5%) | 76.6% | 28 scored / 169 conceded | 3 |
-| Demonstration warm start | 192/200 (96%) | 2.55% | 67 / 110 | 23 |
-| Warm start + 1.51M revised PPO | 194/200 (97%) | 2.36% | 83 / 105 | 12 |
+| Actor | Incoming shots with a real contact | Verified returns | Decisions near a boundary | Rally points vs strong interceptor | Unscored rally endings |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Original 5.03M PPO | 105/200 (52.5%) | 82/200 (41%) | 81.1% | 23 scored / 157 conceded | 20 |
+| Demonstration warm start | 193/200 (96.5%) | 190/200 (95%) | 1.96% | 67 / 104 | 29 |
+| Warm start + 1.51M revised PPO | 195/200 (97.5%) | 191/200 (95.5%) | 3.05% | 90 / 81 | 29 |
+| Selected Insane, +4.03M coherent-exploration PPO | 195/200 (97.5%) | 193/200 (96.5%) | 10.6% | 107 / 40 | 53 |
+
+Version 3 assigns each world a fixed episode quota and reseeds separately for
+each task. Faster episodes cannot select extra initial states. The defense
+panel contains exactly 106 direct, 71 bank, and 23 fast goal-directed shots
+for every actor. The older versions used aggregate completion counts; their
+reports remain historical evidence rather than matched comparisons.
+
+A verified return requires actual learner contact followed by the puck crossing
+the center toward the opponent at more than 100 units/s. It is distinct from
+touching the puck, preventing a concession, and eventually winning a point.
+The selected actor returns 105/106 direct, 65/71 bank, and 23/23 fast shots.
+Bank-shot recovery remains its weakest defense subgroup. A late return can
+still end in a concession; the full outcome counts are retained.
 
 The boundary statistic decodes the delayed paddle position. It measures camping,
 not illegal movement. A contact is also not automatically a successful save.
-Full point outcomes, stalls, and time limits remain separate metrics. The revised
-PPO's 44.1% win fraction among decided rally points is **not** an 80% first-to-seven
-match win rate. Basic pursuit is much better; strategic shooting remains weak.
+Full point outcomes, stalls, and time limits remain separate metrics. The selected
+actor's 72.8% win fraction among decided rally points is **not** an 80%
+first-to-seven match win rate. Its 53 unscored 30-second rallies also matter.
+The final four policies are evaluated separately in full nominal matches.
 
-Evidence: [before](../validation/quality-before-v2.json),
-[warm start](../validation/quality-bootstrap-v2.json),
-[revised PPO](../validation/quality-ppo.json). The earlier version-1 direct-shot
-panel is retained separately and must not be compared directly to version 2.
+Evidence: [before](../validation/quality-before-v3.json),
+[warm start](../validation/quality-bootstrap-v3.json),
+[revised PPO](../validation/quality-ppo-v3.json),
+[selected Insane](../validation/quality-selected-v3.json).
+The earlier panels are retained separately and must not be compared directly
+to version 3.
+
+![Matched control and trajectory comparison](../validation/quality-analysis.png)
 
 ## Why the original learning setup was insufficient
 
@@ -190,13 +209,38 @@ training environment as a Python approximation or retain every training frame.
 
 ## Fixes already made and next promotion gates
 
+The selected bundle now passes the automated match gates. Each row below uses
+400 completed first-to-seven matches, balanced across table sides, with
+held-out serve seeds. No match was censored and no artificial episode limit
+restarted a live rally. The match censoring horizon was 900 active seconds.
+
+| Matchup | Stronger actor wins | Win rate | Wilson 95% interval |
+| --- | ---: | ---: | ---: |
+| Medium vs Easy | 261/400 | 65.25% | 60.46–69.75% |
+| Hard vs Medium | 378/400 | 94.5% | 91.81–96.34% |
+| Insane vs Hard | 371/400 | 92.75% | 89.78–94.90% |
+| Insane vs strong instantaneous interceptor | 388/400 | 97% | 94.83–98.28% |
+| Insane vs delayed puck-chaser | 400/400 | 100% | 99.05–100% |
+
+The puck-chaser observes the puck with a 22-tick (183 ms) delay while using its
+current paddle pose. It follows a clamped point just behind the puck using the
+same finite-mass motor and limits. This is a stronger control comparison than
+delaying its own pose along with the puck. The learned Insane actor still sees
+the entire world with its shipped 10-tick delay; no current-state production
+planner assists it.
+
+The confidence intervals establish this ranking against the fixed evaluation
+panel. They do not certify beginner/expert human difficulty, every possible
+scripted exploit, or seed variance under a matched training budget. Those
+remain separate questions. See [full match evidence](../validation/difficulty.json).
+
 Two implementation issues were also fixed: curriculum coefficients now update
 when two successive phases share the same mode, and loading an SB3 checkpoint
 applies the requested PPO hyperparameters while preserving optimizer state.
 Potential shaping uses the same gamma as PPO. Runnable checks cover reward
 annealing, a physical drill return, exact stepping, and resumed settings.
 
-The revised actor is a candidate. Before promotion:
+The remaining behavioral and calibration checks are:
 
 1. Beat delayed chasers at several fixed delays, plus center defense, strong
    interception, and frozen actors. Use held-out seeds and both table sides.
@@ -216,11 +260,25 @@ before expanding the model or adding an inference planner. A training-only
 bank-shot teacher and stock PPO's state-dependent exploration are reasonable
 bounded comparisons. Only measured improvements should enter the release.
 
-The current bounded follow-up uses stock SB3 generalized state-dependent
+The completed bounded follow-up uses stock SB3 generalized state-dependent
 exploration, refreshing its noise every eight decisions (267 ms). This explores
 coherent strokes instead of independent velocity jitter at each decision.
 Actor/critic weights start from the revised candidate; the optimizer and
 exploration state start fresh and that distinction is recorded. The deterministic
 deployment actor is still the same small three-layer MLP. Four runs use fixed
-deployment delays of 10/14/22/30 ticks and seeds 43/47/53/59. These are candidate
-experiments, not certified difficulty levels.
+deployment delays of 10/14/22/30 ticks and seeds 43/47/53/59. Each completed
+4,030,464 new PPO decisions. They are distinct seeds under distinct delays,
+so this comparison does not isolate seed variance from delay sensitivity.
+The four exported checkpoints are retained under `training/checkpoints/`.
+
+The strategic curriculum still limits training rallies to 12 seconds. Longer
+held-out volleys therefore test states that were weakly covered in training.
+If full matches show excessive timeouts or weak attack, the next bounded
+experiment should extend rally coverage to 60 seconds while retaining the
+same actor, outcome rewards, opponent panel, and deployment delay.
+
+Nominal qualification uses the same launch primitive and duplicated launch
+history as gameplay. No artificial episode limit restarts a live rally before
+the match censoring horizon. Match durations count active rally simulation;
+the game's frozen countdown and goal presentation are excluded. Censored
+matches remain explicit failures of the completeness gate.

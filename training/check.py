@@ -52,6 +52,9 @@ def main():
         env.env_method("configure", mode="rally", learner_side=1, evaluation_match=True, shaping=0)
         obs = env.reset()
         assert abs(obs[0, 41] - 0.66) < 0.00001
+        # Nominal evaluation serves and duplicated launch history match main.gd.
+        assert abs(obs[0, 38]) <= 80 / 2300 and np.isclose(abs(obs[0, 39]), 260 / 2300)
+        assert np.array_equal(obs[0, :12], obs[0, 36:48])
         for _ in range(4):
             env.step(np.array([[0.5, 0], [0, 0]], np.float32))
         assert raw.client.command("inspect")["states"][0]["paddle"][0] < 290
@@ -120,6 +123,7 @@ def main():
     report = {"pendulum_ppo": "passed", "godot_ppo_resume": "passed", "batch_dtype_reset_terminal": "passed",
               "terminal_mid_action": "passed", "exact_four_ticks": "passed", "travel": travel,
               "frozen_while_waiting": "passed", "independent_worlds": "passed", "child_cleanup": "passed",
+              "nominal_serve_history": "passed",
               "batch_benchmarks": timings, "device": "cpu", "torch_threads": 1}
     path = ROOT / "validation/bridge.json"
     path.write_text(json.dumps(report, indent=2) + "\n")

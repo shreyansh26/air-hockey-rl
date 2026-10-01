@@ -332,6 +332,7 @@ func _physics_process(delta: float) -> void:
 		state_label.text = "READY  " + str(maxi(1, ceili(timer)))
 		if timer <= 0:
 			arena.launch(serve_side)
+			history.reset(arena, 1) # Match training's duplicated initial launch state.
 			state = "rally"
 			state_label.text = LEVELS[level].to_upper() + " • FIRST TO 7"
 	elif state == "goal":

@@ -6,6 +6,8 @@ and paddle colors, local settings, offline assets, and small local PPO actors.
 
 Implementation/evidence: [validation/STATUS.md](validation/STATUS.md). Model
 labels are not skill certificates: measured quality gates are recorded there.
+The original bots failed their quality gates. The new actor bundle and the
+reward, rollout, and trajectory analysis are in [docs/bot-quality.md](docs/bot-quality.md).
 
 ## Run
 
@@ -37,11 +39,31 @@ optimizer-preserving resume; it also measures batches of 16/32/64 arenas.
 ## Train and export
 
 ```sh
+uv run --project training python training/bootstrap.py --output training/runs/bootstrap
+uv run --project training python training/train.py --config training/configs/quality.json --warm-start training/checkpoints/bootstrap/final.zip
+uv run --project training python training/train.py --config training/configs/strategic.json --warm-start training/checkpoints/quality/final.zip --seed 43 --delay 10 --output training/runs/strategic-43
 uv run --project training python training/train.py --config training/configs/smoke.json
 uv run --project training python training/train.py --config training/configs/pilot.json
 uv run --project training python training/train.py --config training/configs/full.json --resume training/runs/pilot/final.zip
 uv run --project training python training/export_policy.py --checkpoint training/runs/full/final.zip --output models/insane --level insane --delay 10
 ```
+
+Selected SB3 checkpoints, RNG, and frozen opponents are retained in
+[training/checkpoints/](training/checkpoints/README.md), so a fresh clone can
+evaluate the shipped actors and resume training. The bootstrap teacher is
+confined to training; gameplay always uses the selected neural actor.
+
+```sh
+uv run --project training python training/parity.py
+uv run --project training python training/quality_probe.py --checkpoint training/checkpoints/insane/final.zip --processes 4 --trace --output validation/quality-probe.json
+uv run --project training python training/evaluate.py --matches 400 --processes 32 --arenas 8 --max-decisions 27000 --baselines intercept puck_chase
+```
+
+Parity generates ignored real-rollout fixtures for QA exports. Quality probes
+use fixed per-world quotas and seed each task independently. Tournaments use
+both sides, real first-to-seven outcomes, and explicit censoring; a long match
+is never converted into a win. Gameplay and nominal evaluation share serves
+and launch history. Evaluation durations exclude frozen presentation time.
 
 Use `--seed`, `--delay`, and `--output` for independent seeds and profile runs.
 Delays are Easy=30, Medium=22, Hard=14 and Insane=10 ticks. Train each chosen
@@ -66,13 +88,17 @@ with the model bundle. Incompatible/missing models stop Play with a visible erro
 
 ```sh
 mkdir -p builds/web builds/android builds/training
+tools/android-project.sh
 tools/godot --headless --path . --export-release Web builds/web/index.html
 tools/godot --headless --path . --export-debug Android builds/android/air-hockey-debug.apk
+tools/godot --headless --path . --export-debug AndroidAAB builds/android/air-hockey-debug.aab
 tools/godot --headless --path . --export-release TrainingLinux builds/training/air-hockey.x86_64
+uv run --project training python checks/build_check.py
 uv run --project training python -m http.server 8765 --bind 127.0.0.1 --directory builds/web
 ```
 
-Open <http://127.0.0.1:8765>. Python's server sends `.wasm` as `application/wasm`.
+Open <http://127.0.0.1:8765/index.html>. The root route redirects to this cached
+entry point. Python's server sends `.wasm` as `application/wasm`.
 Production hosting needs HTTPS for PWA storage. Single-threaded WebGL 2 export
 does not require isolation headers. Let the service worker finish caching before
 going offline; browser eviction/private storage can prevent persistent caching.
@@ -83,7 +109,24 @@ works on the tested host). Debug signing uses the engine's local debug key;
 private keys are ignored. The Android Gradle template belongs in `android/build`
 and is generated from the matching `android_source.zip`. Open that folder in
 Android Studio. AAB export requires the Gradle build and user-owned release
-signing credentials; no store publication is part of this project.
+signing credentials; the included AAB preset can also produce a debug-signed
+bundle. No store publication is part of this project.
+
+For an actual native regression on a **disposable** AVD, first generate parity
+fixtures, then build/install the QA APK. The harness clears only this game's
+test data and disables networking in that named AVD:
+
+```sh
+tools/godot --headless --path . --export-debug AndroidQA builds/android/air-hockey-qa.apk
+adb -s emulator-5554 install -r builds/android/air-hockey-qa.apk
+uv run --project training python checks/android_e2e.py --serial emulator-5554 --port 5037 --apk builds/android/air-hockey-qa.apk --soak
+adb -s emulator-5554 shell run-as com.shreyansh26.glide cat files/qa-soak.json
+```
+
+The command starts a 20-minute **active** soak after the four-level regression;
+it does not wait for completion. Verify `soak_complete` and at least 1200 active
+seconds in the final report. WebQA provides the same `physics`, `parity`, and
+`soak` commands through its visible QA input. Production builds exclude QA.
 
 ## Layout
 

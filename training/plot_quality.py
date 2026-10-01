@@ -13,22 +13,23 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     fig, axes = plt.subplots(1, 3, figsize=(15, 5), constrained_layout=True)
     fig.suptitle("Bot quality: credit horizon, basic control, and a real incoming shot", fontsize=15)
-    colors = ["#c45355", "#df9a35", "#238b78"]
+    colors = ["#c45355", "#df9a35", "#559fc1", "#238b78"]
     seconds = np.linspace(0, 15, 300)
     for gamma, color in [(0.99, colors[0]), (0.999, colors[2])]:
         axes[0].plot(seconds, gamma ** (30 * seconds), color=color, label=f"gamma {gamma}")
     axes[0].set(xlabel="Seconds until a +1 goal", ylabel="Discount multiplier", ylim=(0, 1.05), title="30 Hz decisions")
     axes[0].legend(frameon=False)
-    names = ["Original PPO", "Warm start", "Revised PPO"]
-    files = ["quality-before-v2", "quality-bootstrap-v2", "quality-ppo"]
+    names = ["Original PPO", "Warm start", "Revised PPO", "Selected Insane"]
+    files = ["quality-before-v3", "quality-bootstrap-v3", "quality-ppo-v3", "quality-selected-v3"]
     reports = [json.loads((ROOT / f"validation/{name}.json").read_text()) for name in files]
-    x = np.arange(3)
-    axes[1].bar(x - 0.18, [m["defense"]["contact_rate"] * 100 for m in reports], 0.36, color=colors[2], label="Real puck contact")
-    axes[1].bar(x + 0.18, [m["defense"]["near_boundary_fraction"] * 100 for m in reports], 0.36, color=colors[0], label="Near boundary")
+    x = np.arange(4)
+    axes[1].bar(x - 0.24, [m["defense"]["contact_rate"] * 100 for m in reports], 0.24, color=colors[2], label="Real puck contact")
+    axes[1].bar(x, [m["defense"]["verified_returns"] / m["defense"]["episodes"] * 100 for m in reports], 0.24, color=colors[3], label="Verified return")
+    axes[1].bar(x + 0.24, [m["defense"]["near_boundary_fraction"] * 100 for m in reports], 0.24, color=colors[0], label="Near boundary")
     axes[1].set(xticks=x, xticklabels=names, ylabel="Percent", ylim=(0, 110), title="200 held-out incoming-shot episodes")
     axes[1].legend(frameon=False, loc="upper left", fontsize=8)
     axes[1].tick_params(axis="x", labelsize=9)
-    for i in [0, 2]:
+    for i in [0, 3]:
         trace = json.loads((ROOT / reports[i]["defense"]["trajectory_file"]).read_text())
         trace = [row for row in trace if row["episode"] == 0]
         puck = np.array([row["state"]["puck"] for row in trace])

@@ -1,0 +1,70 @@
+{
+  "method": "demonstration warm start on real Godot rollouts; PPO follows separately",
+  "physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
+  "seed": 41,
+  "delay_ticks": 10,
+  "wall_seconds": 28.80621498695109,
+  "history": [
+    {
+      "iteration": 0,
+      "actual_godot_decisions": 16384,
+      "held_out_action_mse": 0.05530918389558792
+    },
+    {
+      "iteration": 1,
+      "actual_godot_decisions": 32768,
+      "held_out_action_mse": 0.044911518692970276
+    },
+    {
+      "iteration": 2,
+      "actual_godot_decisions": 49152,
+      "held_out_action_mse": 0.03707639127969742
+    },
+    {
+      "iteration": 3,
+      "actual_godot_decisions": 65536,
+      "held_out_action_mse": 0.03453035280108452
+    },
+    {
+      "iteration": 4,
+      "actual_godot_decisions": 81920,
+      "held_out_action_mse": 0.02625153958797455
+    },
+    {
+      "iteration": 5,
+      "actual_godot_decisions": 98304,
+      "held_out_action_mse": 0.03394989296793938
+    },
+    {
+      "iteration": 6,
+      "actual_godot_decisions": 114688,
+      "held_out_action_mse": 0.02988593839108944
+    },
+    {
+      "iteration": 7,
+      "actual_godot_decisions": 131072,
+      "held_out_action_mse": 0.03167098015546799
+    },
+    {
+      "iteration": 8,
+      "actual_godot_decisions": 147456,
+      "held_out_action_mse": 0.030225910246372223
+    },
+    {
+      "iteration": 9,
+      "actual_godot_decisions": 163840,
+      "held_out_action_mse": 0.022672142833471298
+    },
+    {
+      "iteration": 10,
+      "actual_godot_decisions": 180224,
+      "held_out_action_mse": 0.02560366503894329
+    },
+    {
+      "iteration": 11,
+      "actual_godot_decisions": 196608,
+      "held_out_action_mse": 0.02152191288769245
+    }
+  ],
+  "ppo_transitions": 0
+}

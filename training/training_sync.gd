@@ -149,6 +149,7 @@ func _handle(message: Dictionary) -> void:
 		"configure":
 			for controller in controllers:
 				controller.mode = str(message.get("mode", controller.mode))
+				controller.delay_ticks = clampi(int(message.get("delay_ticks", controller.delay_ticks)), 0, 40)
 				controller.learner_side = clampi(int(message.get("learner_side", controller.learner_side)), 0, 1)
 				if controller.learner_side == 1 and controller.mode != "rally":
 					fail("Top-side evaluation requires normal rallies")
@@ -225,7 +226,7 @@ func _reply_step() -> void:
 	var truncated := []
 	var infos := []
 	for controller in controllers:
-		var info := {"physics_ticks": controller.episode_ticks, "hits": controller.arena.contacts[controller.learner_side], "winner": controller.winner, "stalls": controller.stalls, "drill_success": controller.drill_success, "shot_type": controller.shot_type, "mode": controller.active_mode, "opponent_style": "actor" if controller.opponent else controller.opponent_style}
+		var info := {"physics_ticks": controller.episode_ticks, "hits": controller.arena.contacts[controller.learner_side], "winner": controller.winner, "stalls": controller.stalls, "drill_success": controller.drill_success, "verified_return": controller.verified_return, "shot_type": controller.shot_type, "mode": controller.active_mode, "opponent_style": "actor" if controller.opponent else controller.opponent_style}
 		var final_obs := Array(controller.observation())
 		rewards.append(controller.finish_step())
 		terminated.append(controller.terminated)

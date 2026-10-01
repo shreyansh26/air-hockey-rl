@@ -8,29 +8,31 @@
   "frozen_while_waiting": "passed",
   "independent_worlds": "passed",
   "child_cleanup": "passed",
+  "nominal_serve_history": "passed",
   "batch_benchmarks": [
     {
       "arenas": 16,
       "transitions": 2048,
-      "seconds": 0.544321207999019,
-      "transitions_per_second": 3762.484301371721,
-      "simulation_seconds_per_wall_second_per_arena": 7.838508961191085
+      "seconds": 0.7545028339955024,
+      "transitions_per_second": 2714.370188849692,
+      "simulation_seconds_per_wall_second_per_arena": 5.654937893436859
     },
     {
       "arenas": 32,
       "transitions": 4096,
-      "seconds": 1.1570340000034776,
-      "transitions_per_second": 3540.086116732688,
-      "simulation_seconds_per_wall_second_per_arena": 3.6875897049298834
+      "seconds": 1.9638452079962008,
+      "transitions_per_second": 2085.7040989393113,
+      "simulation_seconds_per_wall_second_per_arena": 2.172608436395116
     },
     {
       "arenas": 64,
       "transitions": 8192,
-      "seconds": 2.2614516250032466,
-      "transitions_per_second": 3622.452016849239,
-      "simulation_seconds_per_wall_second_per_arena": 1.8866937587756454
+      "seconds": 3.989609374984866,
+      "transitions_per_second": 2053.333855530925,
+      "simulation_seconds_per_wall_second_per_arena": 1.0694447164223568
     }
   ],
   "device": "cpu",
-  "torch_threads": 1
+  "torch_threads": 1,
+  "timing_context": "Concurrent Android emulators and web gameplay; use local-throughput.json for the earlier isolated batching comparison"
 }

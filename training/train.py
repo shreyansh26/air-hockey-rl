@@ -149,9 +149,10 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int)
     parser.add_argument("--delay", type=int)
     parser.add_argument("--output")
+    parser.add_argument("--transitions", type=int, help="Total decision budget, including the loaded checkpoint's completed decisions")
     args = parser.parse_args()
     config = json.loads(Path(args.config).read_text())
-    for key, value in [("seed", args.seed), ("delay_ticks", args.delay), ("output", args.output)]:
+    for key, value in [("seed", args.seed), ("delay_ticks", args.delay), ("output", args.output), ("transitions", args.transitions)]:
         if value is not None:
             config[key] = value
     train(config, args.resume, args.warm_start)

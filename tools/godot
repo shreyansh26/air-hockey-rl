@@ -1,6 +1,12 @@
 #!/bin/sh
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
+mkdir -p "$ROOT/training/runs"
+for directory in "$ROOT/.tools" "$ROOT/builds" "$ROOT/training/runs" "$ROOT/training/.venv"; do
+  if [ -d "$directory" ]; then
+    touch "$directory/.gdignore"
+  fi
+done
 if [ "$(uname -s)" = Darwin ]; then
   exec "$ROOT/.tools/Godot.app/Contents/MacOS/Godot" "$@"
 fi

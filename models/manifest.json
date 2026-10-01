@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
+  "quality": "automated match gates passed; human skill labels unverified",
   "levels": {
     "easy": {
       "schema_version": 1,
@@ -22,9 +23,9 @@
       "schema_hash": "86674845d34076e5fefec1e6ab67c2be160297227298903525568608672906d5",
       "physics_hz": 120,
       "action_ticks": 4,
-      "weights_sha256": "eca557f0d630afef8b57e541bdbca8859075925232831376e5e7552947887abf",
-      "checkpoint_sha256": "6ce06d3656cc98f3bff3a2cdd2d02a5ac1804ee244c6fa8841faae69c71a7ecd",
-      "trained_transitions": 757760,
+      "weights_sha256": "1fc263c3bce703938d761442b26f4c6df6c1cf5c2f85677462ce352ad77674f2",
+      "checkpoint_sha256": "e00243b6eb7658dbcde5241b6ff06acf8619579bfeec864962f99e65bae57eb4",
+      "trained_transitions": 4030464,
       "difficulty": "easy",
       "delay_ticks": 30,
       "normalization": {
@@ -33,8 +34,41 @@
         "paddle_velocity": 1050,
         "position_clip": 1.1
       },
-      "quality": "candidate; see validation/difficulty.json",
-      "checkpoint": "training/runs/easy/final.zip"
+      "quality": "automated match gates passed; human skill labels unverified",
+      "training_provenance": {
+        "seed": 59,
+        "ppo": {
+          "learning_rate": 0.00015,
+          "n_steps": 512,
+          "batch_size": 512,
+          "n_epochs": 5,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip_range": 0.15,
+          "ent_coef": 0.001,
+          "target_kl": 0.015,
+          "use_sde": true,
+          "sde_sample_freq": 8
+        },
+        "curriculum": [
+          {
+            "until": 1000000,
+            "mode": "rally",
+            "hit_reward": 0.03,
+            "shaping": 0.04
+          },
+          {
+            "until": 4000000,
+            "mode": "rally",
+            "hit_reward": 0,
+            "shaping": 0.02
+          }
+        ],
+        "warm_start": "training/runs/quality/final.zip",
+        "resume": null
+      },
+      "checkpoint": "training/checkpoints/easy/final.zip",
+      "actor_manifest": "models/easy/actor.json"
     },
     "medium": {
       "schema_version": 1,
@@ -56,9 +90,9 @@
       "schema_hash": "86674845d34076e5fefec1e6ab67c2be160297227298903525568608672906d5",
       "physics_hz": 120,
       "action_ticks": 4,
-      "weights_sha256": "9d30c3057cabcea3aa640804a4588be34f32b08cbe739810cb81d8f5e2ab6507",
-      "checkpoint_sha256": "a49a2a056b2fae9113932adf8115e9d0ad52920fdb1326687f5a0ad974d6aae3",
-      "trained_transitions": 1003520,
+      "weights_sha256": "8e153ee9c5076ecae84d54b72aed62aafbe6d1c1ad6c0b4f0b15f65d6c1fdc61",
+      "checkpoint_sha256": "68310212533b6adebd0157b76e3b066a808675e0b7852497c79a936b6fe1baa3",
+      "trained_transitions": 4030464,
       "difficulty": "medium",
       "delay_ticks": 22,
       "normalization": {
@@ -67,8 +101,41 @@
         "paddle_velocity": 1050,
         "position_clip": 1.1
       },
-      "quality": "candidate; see validation/difficulty.json",
-      "checkpoint": "training/runs/medium/final.zip"
+      "quality": "automated match gates passed; human skill labels unverified",
+      "training_provenance": {
+        "seed": 53,
+        "ppo": {
+          "learning_rate": 0.00015,
+          "n_steps": 512,
+          "batch_size": 512,
+          "n_epochs": 5,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip_range": 0.15,
+          "ent_coef": 0.001,
+          "target_kl": 0.015,
+          "use_sde": true,
+          "sde_sample_freq": 8
+        },
+        "curriculum": [
+          {
+            "until": 1000000,
+            "mode": "rally",
+            "hit_reward": 0.03,
+            "shaping": 0.04
+          },
+          {
+            "until": 4000000,
+            "mode": "rally",
+            "hit_reward": 0,
+            "shaping": 0.02
+          }
+        ],
+        "warm_start": "training/runs/quality/final.zip",
+        "resume": null
+      },
+      "checkpoint": "training/checkpoints/medium/final.zip",
+      "actor_manifest": "models/medium/actor.json"
     },
     "hard": {
       "schema_version": 1,
@@ -90,9 +157,9 @@
       "schema_hash": "86674845d34076e5fefec1e6ab67c2be160297227298903525568608672906d5",
       "physics_hz": 120,
       "action_ticks": 4,
-      "weights_sha256": "12fed0cd5d24075ea9af71ce19b0f5c581ad768630e5403f460b05b8a1b3c5d9",
-      "checkpoint_sha256": "5537d6172b16f7c644a5edbf200713e19027dfb56ca529253a0d81e1211334bb",
-      "trained_transitions": 1519616,
+      "weights_sha256": "91a69b2748178a864189f69a80f5c8bc794873631b0a843ce5ed59e2792758e7",
+      "checkpoint_sha256": "fd40876b67bb05325deb17df5148970565a0bfdc9910020e9f01ca8b571e2b76",
+      "trained_transitions": 4030464,
       "difficulty": "hard",
       "delay_ticks": 14,
       "normalization": {
@@ -101,8 +168,41 @@
         "paddle_velocity": 1050,
         "position_clip": 1.1
       },
-      "quality": "candidate; see validation/difficulty.json",
-      "checkpoint": "training/runs/hard-remote/final.zip"
+      "quality": "automated match gates passed; human skill labels unverified",
+      "training_provenance": {
+        "seed": 47,
+        "ppo": {
+          "learning_rate": 0.00015,
+          "n_steps": 512,
+          "batch_size": 512,
+          "n_epochs": 5,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip_range": 0.15,
+          "ent_coef": 0.001,
+          "target_kl": 0.015,
+          "use_sde": true,
+          "sde_sample_freq": 8
+        },
+        "curriculum": [
+          {
+            "until": 1000000,
+            "mode": "rally",
+            "hit_reward": 0.03,
+            "shaping": 0.04
+          },
+          {
+            "until": 4000000,
+            "mode": "rally",
+            "hit_reward": 0,
+            "shaping": 0.02
+          }
+        ],
+        "warm_start": "training/runs/quality/final.zip",
+        "resume": null
+      },
+      "checkpoint": "training/checkpoints/hard/final.zip",
+      "actor_manifest": "models/hard/actor.json"
     },
     "insane": {
       "schema_version": 1,
@@ -124,9 +224,9 @@
       "schema_hash": "86674845d34076e5fefec1e6ab67c2be160297227298903525568608672906d5",
       "physics_hz": 120,
       "action_ticks": 4,
-      "weights_sha256": "8b101db66d597b3f6588f3aa245eeba9f7ed49ddc60de498faa561a84f9668e5",
-      "checkpoint_sha256": "6948450ca5e0234d456c8497a2b83840306d536219368eb12aa23b580ceb2531",
-      "trained_transitions": 5025792,
+      "weights_sha256": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325",
+      "checkpoint_sha256": "b9145d638c3a8e170fd1da7fe9d7acaadb7119f63590308c4db93fd937b8927c",
+      "trained_transitions": 4030464,
       "difficulty": "insane",
       "delay_ticks": 10,
       "normalization": {
@@ -135,9 +235,41 @@
         "paddle_velocity": 1050,
         "position_clip": 1.1
       },
-      "quality": "candidate; see validation/difficulty.json",
-      "checkpoint": "training/runs/full-remote/final.zip"
+      "quality": "automated match gates passed; human skill labels unverified",
+      "training_provenance": {
+        "seed": 43,
+        "ppo": {
+          "learning_rate": 0.00015,
+          "n_steps": 512,
+          "batch_size": 512,
+          "n_epochs": 5,
+          "gamma": 0.999,
+          "gae_lambda": 0.995,
+          "clip_range": 0.15,
+          "ent_coef": 0.001,
+          "target_kl": 0.015,
+          "use_sde": true,
+          "sde_sample_freq": 8
+        },
+        "curriculum": [
+          {
+            "until": 1000000,
+            "mode": "rally",
+            "hit_reward": 0.03,
+            "shaping": 0.04
+          },
+          {
+            "until": 4000000,
+            "mode": "rally",
+            "hit_reward": 0,
+            "shaping": 0.02
+          }
+        ],
+        "warm_start": "training/runs/quality/final.zip",
+        "resume": null
+      },
+      "checkpoint": "training/checkpoints/insane/final.zip",
+      "actor_manifest": "models/insane/actor.json"
     }
-  },
-  "quality": "failed initial tournament; see validation/difficulty-before.json and docs/bot-quality.md"
+  }
 }
