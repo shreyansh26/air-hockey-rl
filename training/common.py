@@ -25,5 +25,7 @@ def write_schema():
               "action": "clip components [-1,1]; cap vector length 1 in shared motor; invert top command"}
     path = ROOT / "models/schema.json"
     path.parent.mkdir(exist_ok=True)
-    path.write_text(json.dumps(schema, indent=2) + "\n")
+    text = json.dumps(schema, indent=2) + "\n"
+    if not path.exists() or path.read_text() != text:
+        path.write_text(text)
     return path

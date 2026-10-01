@@ -13,6 +13,7 @@ var memory_samples := []
 var frame_samples: Array[float] = []
 var last_memory := 0
 var js_callbacks := []
+var boot_id := str(Time.get_unix_time_from_system())
 
 func initialize(value: Control) -> void:
 	main = value
@@ -121,7 +122,11 @@ func percentile(values: Array[float], fraction: float) -> float:
 	return sorted[int((sorted.size() - 1) * fraction)]
 
 func snapshot() -> Dictionary:
+	var widgets := []
+	_collect_widgets(main, widgets)
 	return {"state": main.state, "scores": main.scores, "level": main.level, "settings": main.settings,
+		"boot_id": boot_id, "static_memory_bytes": Performance.get_monitor(Performance.MEMORY_STATIC), "texture_memory_bytes": Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED),
+		"panel": main.panel_mode, "widgets": widgets,
 		"paddle": [main.arena.paddles[0].position.x, main.arena.paddles[0].position.y],
 		"bot": [main.arena.paddles[1].position.x, main.arena.paddles[1].position.y], "contacts": main.arena.contacts,
 		"touch_id": main.touch_id, "model_hash": main.actor.manifest.weights_sha256 if main.actor else "prototype",
@@ -131,6 +136,18 @@ func snapshot() -> Dictionary:
 		"frame_ms_p50": percentile(main.frames, 0.5), "frame_ms_p95": percentile(main.frames, 0.95),
 		"frame_ms_p99": percentile(main.frames, 0.99), "soak_seconds": (Time.get_ticks_msec() - soak_started) / 1000.0 if soak_started else 0,
 		"soak_matches": soak_matches}
+
+func _collect_widgets(node: Node, widgets: Array) -> void:
+	if node is BaseButton and node.is_visible_in_tree():
+		var rect: Rect2 = node.get_global_rect()
+		widgets.append({"text": node.text, "rect": [rect.position.x, rect.position.y, rect.size.x, rect.size.y], "type": node.get_class()})
+	if node is PopupMenu and node.visible:
+		var entries := []
+		for i in range(node.item_count):
+			entries.append(node.get_item_text(i))
+		widgets.append({"type": "PopupMenu", "items": entries, "rect": [node.position.x, node.position.y, node.size.x, node.size.y]})
+	for child in node.get_children(true):
+		_collect_widgets(child, widgets)
 
 func _write_report() -> void:
 	var report := snapshot()

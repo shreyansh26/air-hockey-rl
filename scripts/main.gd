@@ -4,6 +4,7 @@ const ARENA = preload("res://scenes/arena.tscn")
 const TABLE = preload("res://scripts/table.gd")
 const LEVELS = ["Easy", "Medium", "Hard", "Insane"]
 const TINTS = [Color("ffbd73"), Color("65d3e5"), Color("e99cbe"), Color("b2d789")]
+const PUCK_TINTS = [Color("eaf8ff"), Color("ffbd73"), Color("e99cbe"), Color("b2d789")]
 var arena: Node2D
 var arena_view: SubViewport
 var arena_sprite: Sprite2D
@@ -37,11 +38,14 @@ var audio: AudioStreamPlayer
 var storage_ok := true
 var last_sample_tick := 0
 var last_decision_tick := -1
+var particles: Array[Dictionary] = []
+var panel_mode := "menu"
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().auto_accept_quit = false
+	get_tree().quit_on_go_back = false
 	_load_settings()
 	_build_theme()
 	arena_view = SubViewport.new()
@@ -84,6 +88,8 @@ func _build_theme() -> void:
 	theme.default_font_size = 22
 	theme.set_color("font_color", "Label", Color("e3edf1"))
 	theme.set_color("font_color", "Button", Color("e3edf1"))
+	theme.set_constant("v_separation", "PopupMenu", 44)
+	theme.set_font_size("font_size", "PopupMenu", 22)
 	for type in ["Button", "OptionButton"]:
 		for key in ["normal", "hover", "pressed", "focus"]:
 			var box := StyleBoxFlat.new()
@@ -107,16 +113,18 @@ func _label(text: String, size_px := 22) -> Label:
 func _button(text: String, callback: Callable) -> Button:
 	var button := Button.new()
 	button.text = text
-	button.custom_minimum_size.y = 58
+	button.custom_minimum_size.y = 74
 	button.pressed.connect(callback)
 	content.add_child(button)
 	return button
 
 func _build_hud() -> void:
 	var brand := _label("GLIDE", 38)
+	brand.name = "Brand"
 	brand.position = Vector2(32, 20)
 	add_child(brand)
 	var subtitle := _label("AIR HOCKEY", 15)
+	subtitle.name = "Subtitle"
 	subtitle.position = Vector2(33, 68)
 	subtitle.modulate = Color("7d9bab")
 	add_child(subtitle)
@@ -127,7 +135,7 @@ func _build_hud() -> void:
 	add_child(state_label)
 	pause_button = Button.new()
 	pause_button.text = "Pause"
-	pause_button.custom_minimum_size = Vector2(115, 58)
+	pause_button.custom_minimum_size = Vector2(115, 74)
 	pause_button.pressed.connect(_pause)
 	add_child(pause_button)
 	footer = _label("DRAG TO MOVE   /   ARROW KEYS OR WASD", 16)
@@ -152,16 +160,26 @@ func _build_hud() -> void:
 func _layout() -> void:
 	if not arena:
 		return
-	table_scale = minf((size.x - 64) / 680, (size.y - 240) / 1080)
+	var safe_top := 0.0
+	var safe_bottom := 0.0
+	if OS.get_name() == "Android":
+		var safe := DisplayServer.get_display_safe_area()
+		var screen := DisplayServer.screen_get_size()
+		if screen.y > 0 and safe.size.y > 0:
+			safe_top = safe.position.y * size.y / screen.y
+			safe_bottom = maxf(0, (screen.y - safe.end.y) * size.y / screen.y)
+	get_node("Brand").position.y = 20 + safe_top
+	get_node("Subtitle").position.y = 68 + safe_top
+	table_scale = minf((size.x - 64) / 680, (size.y - 240 - safe_top - safe_bottom) / 1080)
 	arena_sprite.scale = Vector2.ONE * table_scale
-	arena_sprite.position = Vector2((size.x - 680 * table_scale) / 2, 132)
+	arena_sprite.position = Vector2((size.x - 680 * table_scale) / 2, 132 + safe_top)
 	table_origin = arena_sprite.position + Vector2(40, 40) * table_scale
-	score_label.position = Vector2(size.x / 2 - 175, 32)
+	score_label.position = Vector2(size.x / 2 - 175, 32 + safe_top)
 	score_label.size.x = 350
-	state_label.position = Vector2(size.x / 2 - 175, 77)
+	state_label.position = Vector2(size.x / 2 - 175, 77 + safe_top)
 	state_label.size.x = 350
-	pause_button.position = Vector2(size.x - 145, 27)
-	footer.position = Vector2(0, size.y - 46)
+	pause_button.position = Vector2(size.x - 145, 27 + safe_top)
+	footer.position = Vector2(0, size.y - 46 - safe_bottom)
 	footer.size.x = size.x
 	overlay.size.x = minf(470, size.x - 72)
 	overlay.position = Vector2((size.x - overlay.size.x) / 2, maxf(120, (size.y - overlay.size.y) / 2))
@@ -190,6 +208,7 @@ func _fit_panel() -> void:
 func _menu() -> void:
 	get_tree().paused = false
 	state = "menu"
+	panel_mode = "menu"
 	_clear_input()
 	arena.reset_rally()
 	actor = null
@@ -210,7 +229,7 @@ func _picker(title: String, choices: Array, selected: int, callback: Callable) -
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(label)
 	var picker := OptionButton.new()
-	picker.custom_minimum_size = Vector2(210, 54)
+	picker.custom_minimum_size = Vector2(210, 74)
 	for choice in choices:
 		picker.add_item(choice)
 	picker.select(selected)
@@ -219,6 +238,7 @@ func _picker(title: String, choices: Array, selected: int, callback: Callable) -
 	content.add_child(row)
 
 func _customize() -> void:
+	panel_mode = "customize"
 	_clear_panel("MAKE IT YOURS", "A fresh finish. The same game.")
 	_picker("Table", ["Atlantic", "Evergreen", "Graphite"], settings.table, func(i): settings.table = i; _apply_cosmetics(); _save_settings())
 	_picker("Puck", ["Ice", "Apricot", "Rose", "Lime"], settings.puck, func(i): settings.puck = i; _apply_cosmetics(); _save_settings())
@@ -228,11 +248,12 @@ func _customize() -> void:
 	_button("Done", _menu)
 
 func _settings_menu() -> void:
+	panel_mode = "settings"
 	_clear_panel("SETTINGS", "Keep your eye on the puck.")
 	for entry in [["Sound", "sound"], ["Haptics", "haptics"], ["Reduced effects", "reduced_effects"]]:
 		var toggle := CheckButton.new()
 		toggle.text = entry[0]
-		toggle.custom_minimum_size.y = 54
+		toggle.custom_minimum_size.y = 74
 		toggle.button_pressed = settings[entry[1]]
 		var key: String = entry[1]
 		toggle.toggled.connect(func(value): settings[key] = value; _apply_cosmetics(); _save_settings())
@@ -253,12 +274,15 @@ func _apply_cosmetics() -> void:
 	if not arena:
 		return
 	table.apply_finish(settings.table)
-	arena.puck.tint = Color("eaf8ff") if settings.puck == 0 else TINTS[settings.puck - 1]
+	arena.puck.tint = PUCK_TINTS[settings.puck]
 	arena.paddles[0].tint = TINTS[settings.human]
 	arena.paddles[1].tint = TINTS[settings.bot]
 	for body in [arena.puck, arena.paddles[0], arena.paddles[1]]:
 		body.reduced_effects = settings.reduced_effects
 		body.queue_redraw()
+	if settings.reduced_effects:
+		particles.clear()
+		trail.clear()
 
 func _start_match() -> void:
 	model_error = ""
@@ -272,11 +296,9 @@ func _start_match() -> void:
 			return
 		history = load("res://scripts/observation.gd").new()
 	else:
-		# Only the initial prototype can use this path, visibly labeled.
-		if not OS.has_feature("editor") and not OS.has_feature("prototype"):
-			_clear_panel("MODEL UNAVAILABLE", "Rebuild with the bundled trained policies.")
-			_button("Menu", _menu)
-			return
+		_clear_panel("MODEL UNAVAILABLE", "Rebuild with the bundled trained policies.")
+		_button("Menu", _menu)
+		return
 	scores = [0, 0]
 	serve_side = opening_side
 	opening_side = 1 - opening_side
@@ -305,7 +327,7 @@ func _physics_process(delta: float) -> void:
 		if timer <= 0:
 			arena.launch(serve_side)
 			state = "rally"
-			state_label.text = LEVELS[level].to_upper() + (" • RL" if actor else " • DEVELOPMENT BOT")
+			state_label.text = LEVELS[level].to_upper() + " • FIRST TO 7"
 	elif state == "goal":
 		timer -= delta
 		if timer <= 0:
@@ -336,8 +358,6 @@ func _physics_process(delta: float) -> void:
 					actor_times.pop_front()
 				history.previous_action = action
 				arena.paddles[1].set_command(-action)
-			else:
-				arena.baseline(1)
 
 func _process(delta: float) -> void:
 	frames.append(delta * 1000)
@@ -347,12 +367,18 @@ func _process(delta: float) -> void:
 		trail.append(arena.puck.position)
 		if trail.size() > 6:
 			trail.pop_front()
+	for particle in particles:
+		particle.life -= delta
+		particle.point += particle.velocity * delta
+	particles = particles.filter(func(particle): return particle.life > 0)
 	queue_redraw()
 
 func _draw() -> void:
 	if arena and state == "rally" and not settings.reduced_effects:
 		for i in range(1, trail.size()):
 			draw_line(table_origin + trail[i - 1] * table_scale, table_origin + trail[i] * table_scale, Color(0.8, 0.96, 1, 0.1 * float(i) / trail.size()), 6 * table_scale, true)
+	for particle in particles:
+		draw_circle(table_origin + particle.point * table_scale, 2 * table_scale, Color(0.8, 0.96, 1.0, particle.life / 0.18))
 
 func _goal(side: int) -> void:
 	if state != "rally":
@@ -408,7 +434,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouse and event.device == -1:
 		return # UI receives touch-emulated mouse; paddle input owns the real touch ID.
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-		_resume() if state == "paused" else _pause()
+		if (state == "menu" and panel_mode != "menu") or state == "results":
+			_menu()
+		else:
+			_resume() if state == "paused" else _pause()
 	if state != "rally":
 		return
 	if event is InputEventScreenTouch:
@@ -445,6 +474,8 @@ func _notification(what: int) -> void:
 	elif what == NOTIFICATION_WM_GO_BACK_REQUEST:
 		if state == "paused":
 			_menu()
+		elif state == "results" or (state == "menu" and panel_mode != "menu"):
+			_menu()
 		elif state == "menu":
 			get_tree().quit()
 		else:
@@ -453,6 +484,9 @@ func _notification(what: int) -> void:
 		get_tree().quit()
 
 func _impact(speed: float, _side: int) -> void:
+	if not settings.reduced_effects and state == "rally" and speed > 150 and particles.size() < 24:
+		for i in range(3):
+			particles.append({"point": arena.puck.position, "velocity": Vector2.RIGHT.rotated(randf() * TAU) * 180, "life": 0.18})
 	if settings.sound and state == "rally" and audio.stream:
 		audio.volume_db = lerpf(-24, -8, clampf(speed / 2300, 0, 1))
 		audio.pitch_scale = randf_range(0.9, 1.1)
@@ -468,6 +502,8 @@ func _load_settings() -> void:
 	for key in ["table", "puck", "human", "bot", "level"]:
 		settings[key] = clampi(settings[key], 0, 2 if key == "table" else 3)
 	settings.offset = clampf(settings.offset, 0, 100)
+	if not is_finite(settings.offset):
+		settings.offset = 0.0
 	level = settings.level
 	storage_ok = OS.is_userfs_persistent()
 

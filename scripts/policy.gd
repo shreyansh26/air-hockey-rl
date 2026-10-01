@@ -49,8 +49,9 @@ func predict(input: PackedFloat32Array) -> Vector2:
 	var action := Vector2.ZERO
 	for row in range(2):
 		var total: float = weights[7680 + row]
+		var row_offset := 7552 + row * 64
 		for column in range(64):
-			total += weights[7552 + row * 64 + column] * hidden_b[column]
+			total += weights[row_offset + column] * hidden_b[column]
 		if not is_finite(total):
 			error = "Non-finite actor output"
 			return Vector2.ZERO
@@ -60,6 +61,7 @@ func predict(input: PackedFloat32Array) -> Vector2:
 func _layer(input: PackedFloat32Array, output: PackedFloat32Array, columns: int, rows: int, offset: int, activate: bool) -> void:
 	for row in range(rows):
 		var total: float = weights[offset + columns * rows + row]
+		var row_offset := offset + row * columns
 		for column in range(columns):
-			total += weights[offset + row * columns + column] * input[column]
+			total += weights[row_offset + column] * input[column]
 		output[row] = tanh(total) if activate else total

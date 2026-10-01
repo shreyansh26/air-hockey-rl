@@ -12,23 +12,23 @@
     {
       "arenas": 16,
       "transitions": 2048,
-      "seconds": 0.5838515410141554,
-      "transitions_per_second": 3507.741019990468,
-      "simulation_seconds_per_wall_second_per_arena": 7.307793791646809
+      "seconds": 0.784245834016474,
+      "transitions_per_second": 2611.426049292829,
+      "simulation_seconds_per_wall_second_per_arena": 5.440470936026726
     },
     {
       "arenas": 32,
       "transitions": 4096,
-      "seconds": 1.1689604590064846,
-      "transitions_per_second": 3503.9679643922655,
-      "simulation_seconds_per_wall_second_per_arena": 3.6499666295752764
+      "seconds": 1.7618555829976685,
+      "transitions_per_second": 2324.8216479985012,
+      "simulation_seconds_per_wall_second_per_arena": 2.4216892166651056
     },
     {
       "arenas": 64,
       "transitions": 8192,
-      "seconds": 2.263317457982339,
-      "transitions_per_second": 3619.4657409229967,
-      "simulation_seconds_per_wall_second_per_arena": 1.8851384067307275
+      "seconds": 2.8486437080136966,
+      "transitions_per_second": 2875.754513263479,
+      "simulation_seconds_per_wall_second_per_arena": 1.4977888089913953
     }
   ],
   "device": "cpu",
