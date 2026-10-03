@@ -13,6 +13,7 @@ func check(value: bool, message: String) -> void:
 func _run() -> void:
 	var main = load("res://scenes/main.tscn").instantiate()
 	root.add_child(main)
+	check(main.content.has_node("RepositoryLink") == OS.has_feature("web"), "Repository link must appear only in browser builds")
 	main.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	var sizes := [Vector2(360, 800), Vector2(600, 1340), Vector2(695, 1000), Vector2(768, 1024), Vector2(1024, 768), Vector2(1440, 900)]
 	for viewport in sizes:

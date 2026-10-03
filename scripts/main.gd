@@ -317,6 +317,15 @@ func _menu() -> void:
 	_button("Play", _start_match, true)
 	_button("Customize", _customize)
 	_button("Settings", _settings_menu)
+	if OS.has_feature("web"):
+		var repository := _button("View on GitHub  ↗", func(): OS.shell_open("https://github.com/shreyansh26/air-hockey-rl"))
+		repository.name = "RepositoryLink"
+		repository.icon = preload("res://assets/github.svg")
+		repository.flat = true
+		repository.custom_minimum_size.y = 64
+		repository.add_theme_font_size_override("font_size", 20)
+		repository.add_theme_constant_override("h_separation", 12)
+		repository.tooltip_text = "View the source code on GitHub (opens a new tab)"
 	pause_button.hide()
 	state_label.text = ""
 	score_label.text = "0"
