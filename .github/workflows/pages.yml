@@ -26,8 +26,8 @@ jobs:
         with:
           path: |
             .tools/Godot_v4.5.1-stable_linux.x86_64
-            ~/.local/share/godot/export_templates/4.5.1.stable/web_release.zip
-          key: godot-4.5.1-linux-web-v1
+            ~/.local/share/godot/export_templates/4.5.1.stable/web_nothreads_release.zip
+          key: godot-4.5.1-linux-web-nothreads-v1
       - name: Install Godot 4.5.1 and matching web templates
         if: steps.godot-cache.outputs.cache-hit != 'true'
         run: |
@@ -37,7 +37,7 @@ jobs:
           unzip -q .tools/godot.zip -d .tools
           curl -fL --retry 3 "$base/Godot_v4.5.1-stable_export_templates.tpz" -o .tools/templates.tpz
           mkdir -p "$HOME/.local/share/godot/export_templates/4.5.1.stable"
-          unzip -j .tools/templates.tpz templates/web_release.zip -d "$HOME/.local/share/godot/export_templates/4.5.1.stable"
+          unzip -j .tools/templates.tpz templates/web_nothreads_release.zip -d "$HOME/.local/share/godot/export_templates/4.5.1.stable"
       - name: Import project
         run: tools/godot --headless --path . --editor --import
       - name: Check shared gameplay and native link exclusion
