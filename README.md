@@ -40,8 +40,8 @@ Python is only needed for training.
 On macOS, the setup helper downloads the matching engine and export templates:
 
 ```sh
-git clone https://github.com/shreyansh26/air-hockey.git
-cd air-hockey
+git clone https://github.com/shreyansh26/air-hockey-rl.git
+cd air-hockey-rl
 tools/setup.sh
 tools/godot --path .
 ```
