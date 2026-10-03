@@ -1,0 +1,82 @@
+name: Build and deploy browser game
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache pinned engine and web templates
+        id: godot-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .tools/Godot_v4.5.1-stable_linux.x86_64
+            ~/.local/share/godot/export_templates/4.5.1.stable/web_nothreads_release.zip
+          key: godot-4.5.1-linux-web-nothreads-v1
+      - name: Install Godot 4.5.1 and matching web templates
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p .tools
+          base=https://github.com/godotengine/godot/releases/download/4.5.1-stable
+          curl -fL --retry 3 "$base/Godot_v4.5.1-stable_linux.x86_64.zip" -o .tools/godot.zip
+          unzip -q .tools/godot.zip -d .tools
+          curl -fL --retry 3 "$base/Godot_v4.5.1-stable_export_templates.tpz" -o .tools/templates.tpz
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.5.1.stable"
+          unzip -j .tools/templates.tpz templates/web_nothreads_release.zip -d "$HOME/.local/share/godot/export_templates/4.5.1.stable"
+      - name: Import project
+        run: tools/godot --headless --path . --editor --import
+      - name: Check shared gameplay and native link exclusion
+        run: |
+          for check in physics observation goal_flow touch_serve layout cosmetics_settings launch; do
+            tools/godot --headless --path . --script "checks/${check}_check.gd"
+          done
+      - name: Export browser game
+        run: |
+          mkdir -p builds/web
+          tools/godot --headless --path . --export-release Web builds/web/index.html
+          for file in index.html index.js index.wasm index.pck index.service.worker.js index.manifest.json; do
+            test -s "builds/web/$file"
+          done
+          touch builds/web/.nojekyll
+      - name: Upload browser preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: glide-web-${{ github.sha }}
+          path: builds/web
+          retention-days: 7
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: builds/web
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
