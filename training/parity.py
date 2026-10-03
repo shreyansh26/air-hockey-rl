@@ -59,6 +59,7 @@ def main(manifest_path, project_path=ROOT, output=ROOT / "validation/parity.json
     result = subprocess.run([str(ROOT / "tools/godot"), "--headless", "--path", str(project), "--script", "checks/parity_check.gd"], capture_output=True, text=True, check=True)
     line = next(line for line in result.stdout.splitlines() if line.startswith("PARITY "))
     metadata["godot"] = json.loads(line[7:])
+    Path(output).parent.mkdir(parents=True, exist_ok=True)
     Path(output).write_text(json.dumps(metadata, indent=2) + "\n")
     print(json.dumps(metadata, indent=2))
 

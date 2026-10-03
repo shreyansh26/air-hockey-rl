@@ -17,7 +17,6 @@
   "physics_hash": "cec96e949686fd652d905c9340eb5432eb48ad3b5da4aa9b715636366d7492cb",
   "schema_hash": "bfa3a24e00c7ddf0ed0de87534f0cb38487176ddafa8ba88e149bbb7db329b9d",
   "training_physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
-  "physics_validation": "validation/difficulty-touch-motor.json",
   "physics_hz": 120,
   "action_ticks": 4,
   "weights_sha256": "8da8140696207ac010f259c358fdcdd70d2bfb62ba679f04919b8d1c3b41d325",
@@ -31,7 +30,7 @@
     "paddle_velocity": 1050,
     "position_clip": 1.1
   },
-  "quality": "playtest candidate: touch and difficulty-order checks pass; strong-baseline completion gate fails (2/400 timeouts)",
+  "quality": "experimental; long-rally robustness and human difficulty calibration remain open",
   "training_provenance": {
     "seed": 43,
     "ppo": {

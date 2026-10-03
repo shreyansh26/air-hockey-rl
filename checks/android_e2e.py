@@ -237,6 +237,7 @@ def main(args):
     report["renderer"] = device.adb("shell", "getprop", "ro.hardware.egl").strip()
     report["final_snapshot"] = state
     destination = args.output or ROOT / f"validation/android-{args.serial}.json"
+    destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2), flush=True)
     if args.soak:

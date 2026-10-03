@@ -43,7 +43,7 @@ def export(checkpoint, output, level="insane", delay=10, physics_validation=None
                 "physics_hz": 120, "action_ticks": 4, "weights_sha256": sha256(binary).hexdigest(),
                 "checkpoint_sha256": sha256(checkpoint_path.read_bytes()).hexdigest(), "trained_transitions": model.num_timesteps,
                 "difficulty": level, "delay_ticks": delay, "normalization": schema["normalization"],
-                "quality": "candidate; see validation/difficulty.json"}
+                "quality": "experimental; evaluate held-out match quality before deployment"}
     metadata["training_provenance"] = {key: provenance.get(key) for key in ["seed", "ppo", "curriculum", "warm_start", "resume"]}
     (output / "actor.json").write_text(json.dumps(metadata, indent=2) + "\n")
     torch.onnx.export(actor, torch.zeros(1, 52), output / "actor.onnx", input_names=["observation"],

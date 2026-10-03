@@ -13,3 +13,12 @@ validation/raw/
 *.keystore
 validation/**/*.import
 .env
+
+# Local development evidence and training artifacts
+validation/
+training/checkpoints/
+AGENTS.md
+air-hockey-godot-rl-plan.md
+docs/bot-quality.md
+training/plot_quality.py
+checks/checkpoint_physics_check.py

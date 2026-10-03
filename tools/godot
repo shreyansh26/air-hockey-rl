@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
-mkdir -p "$ROOT/training/runs"
-for directory in "$ROOT/.tools" "$ROOT/builds" "$ROOT/training/runs" "$ROOT/training/.venv"; do
+mkdir -p "$ROOT/training/runs" "$ROOT/validation"
+for directory in "$ROOT/.tools" "$ROOT/builds" "$ROOT/training/runs" "$ROOT/training/.venv" "$ROOT/validation"; do
   if [ -d "$directory" ]; then
     touch "$directory/.gdignore"
   fi

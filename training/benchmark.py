@@ -23,5 +23,6 @@ for processes in [1, 2, 4, 8]:
     finally:
         env.close()
 report = {"host": platform.platform(), "cpus": os.cpu_count(), "engine_worker_threads": 4, "results": results}
+(ROOT / args.output).parent.mkdir(parents=True, exist_ok=True)
 (ROOT / args.output).write_text(json.dumps(report, indent=2) + "\n")
 print(json.dumps(report, indent=2))

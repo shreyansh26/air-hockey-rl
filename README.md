@@ -1,206 +1,223 @@
-# Glide — air hockey
+<div align="center">
 
-A portrait Godot air-hockey game for the web and native Android. First to seven,
-finger-follow touch or keyboard input, pause/rematch, three table finishes, independent puck
-and paddle colors, local settings, offline assets, and small local PPO actors.
+<h1>Glide · Air Hockey</h1>
+<p><strong>A small arcade game with an opponent trained through reinforcement learning.</strong></p>
+<p>Godot 4.5.1 · Web &amp; Android · Python + PyTorch · PPO · Local inference</p>
 
-Playtest candidate 0.1.4-candidate improves fast finger reversals with a bounded, quicker shared
-paddle motor, direction-preserving diagonal input, and a live touch-offset
-preview. Offset touches can start below the court to reach the back rail.
-The scoreboard is centered over the court and the launcher icon is filled
-with blue artwork, removing its dark padding. Scores, difficulty and a pause
-icon sit in a safe-area header
-above the proportional court. A finish-colored background fills the screen
-and Android's recent-app preview. Menus have larger switches and touch targets,
-clear primary actions and compact appearance rows. Finger tracking uses a
-faster position response and immediate drag events, with the shared physical
-speed and acceleration limits. Paddles
-remain controllable while the centered puck waits for a serve:
-0.7 seconds on a new match, then a 0.55-second goal fade and 0.45-second re-serve.
-Opening serves choose either player randomly; later serves go to the player
-who conceded. Customization shows live previews and color/finish swatches.
-Sound starts off and can be enabled in Settings or Pause. Existing installs
-are muted once when upgrading; subsequent explicit choices are remembered.
+</div>
 
-Implementation/evidence: [validation/STATUS.md](validation/STATUS.md), with the
-latest input checks in [the 0.1.4 report](validation/touch-response-0.1.4.md). Model
-labels are not skill certificates: measured quality gates are recorded there.
-The original bots failed their quality gates. The new actor bundle and the
-reward, rollout, and trajectory analysis are in [docs/bot-quality.md](docs/bot-quality.md).
+Glide is a portrait air-hockey game: drag your paddle, play the rebounds, and race
+an AI opponent to seven points. Its four opponents are trained neural policies,
+with all inference running on the device.
 
-## Run
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/gameplay.png" width="250" alt="Glide gameplay with a green table, pink AI paddle, and apricot player paddle"><br><b>The table</b></td>
+    <td align="center"><img src="docs/screenshots/menu.png" width="250" alt="Glide match menu with difficulty selection, Play, Customize, and Settings"><br><b>Pick a match</b></td>
+    <td align="center"><img src="docs/screenshots/customize.png" width="250" alt="Glide customization menu with table finishes and separate puck and paddle colors"><br><b>Make it yours</b></td>
+  </tr>
+</table>
 
-Use **Godot 4.5.1 stable**, standard editor, matching export templates,
-Compatibility renderer. On macOS the official engine/templates bootstrap is:
+## The game
+
+- **Easy, Medium, Hard, and Insane**, each backed by a separately trained actor.
+- **Touch, mouse, or keyboard** controls, with an adjustable touch offset.
+- **First to seven**, with automatic serves, pause, and rematch.
+- **Three table finishes** and independent puck and paddle colors.
+- **Local settings**, optional sound and haptics, and reduced effects.
+- **Offline Android play** and a web PWA that can work offline after caching.
+
+The project is experimental. Long-rally robustness, web memory behavior, and
+performance on physical devices still need work; difficulty names have not been
+calibrated against human skill levels.
+
+## Run locally
+
+Open `project.godot` in **Godot 4.5.1 standard** and run the main scene. The game
+uses GDScript and the Compatibility renderer. Bundled models are ready to load;
+Python is only needed for training.
+
+On macOS, the setup helper downloads the matching engine and export templates:
 
 ```sh
+git clone https://github.com/shreyansh26/air-hockey.git
+cd air-hockey
 tools/setup.sh
 tools/godot --path .
 ```
 
-`tools/godot` points to the task-local engine. On another OS install the same
-official engine and put `godot` on PATH. Python runs only in `training/.venv`:
+On Linux or Windows, install Godot 4.5.1 and its matching export templates, then
+open the project in the editor. Drag the bottom paddle to play; on desktop,
+WASD or the arrow keys also work. Escape pauses the match.
+
+## How the AI works
+
+The policy receives positions and velocities from the simulation and predicts a
+2D paddle velocity command. The command goes through the same physical motor
+used by the player, so both sides share speed, acceleration, collision, and
+movement limits. The model cannot teleport its paddle or directly move the puck.
+
+The game and training use the **same Godot Arena scene**. Physics runs at 120 Hz;
+the actor chooses an action every four ticks, or 30 times per second. Screen
+size and cosmetics affect presentation while the simulation stays in fixed
+600 × 1000 table coordinates.
+
+```mermaid
+flowchart LR
+    A[Headless Godot arenas] -->|Observations and rewards| B[Python · SB3 PPO]
+    B -->|Paddle actions| A
+    B --> C[Trained actor export]
+    C --> D[Godot · Web and Android]
+```
+
+Each actor is a small **52 → 64 → 64 → 2** MLP with tanh hidden layers: 7,682
+parameters, about 30 KiB of FP32 weights. Its input contains four delayed world
+samples, the previous action, and timing information. Positions and velocities
+are normalized, and both sides use a common frame with the controlled paddle at
+the bottom. A short history helps the model interpret motion and rebounds.
+
+Godot evaluates the exported actor directly in GDScript. The critic, optimizer,
+and exploration machinery stay in Python. ONNX companions are included for
+reuse outside the game. A missing or incompatible actor produces a visible
+error instead of substituting another controller.
+
+## How training data is created
+
+There is no recorded human-play dataset. Training trajectories are generated
+online by running many independent copies of the real arena in headless Godot.
+The Python bridge pauses the worlds while computing actions or updating the
+network, then advances each action through exactly four physics steps.
+
+Initial states cover **incoming direct shots, wall banks, fast goal-directed
+shots, attacking positions, and normal rallies**. Opponents include center
+coverage, puck chasing, interception, and frozen snapshots of earlier learned
+policies. An opponent stays fixed throughout an episode. These scripted
+controllers supply training and evaluation opponents; the playable bots use
+neural actors.
+
+One PPO transition records the delayed observation, sampled action, its log
+probability, the critic's value estimate, reward, and episode boundary. Goals
+end episodes; time limits preserve a final observation for value bootstrapping.
+This keeps the learner's data tied to the actual physical consequences of its
+commands.
+
+## Training methodology
+
+Training has three stages:
+
+1. **Demonstration warm start.** A training-only teacher observes the same
+   delayed state as the learner. It predicts incoming rebounds, prepares behind
+   reachable pucks, and chooses direct or bank-shot lanes. Collection gradually
+   mixes teacher and learner actions, labels the states actually visited with
+   teacher commands, and aggregates those examples. The actor is fitted with
+   mean-squared action error in a DAgger-style imitation step.
+2. **PPO fine-tuning.** Stock Stable-Baselines3 PPO trains the actor and critic
+   through a curriculum that moves from mixed defense/attack drills into
+   rallies. Goals give +1 and concessions −1. Early contact and drill bonuses
+   help establish control; later stages remove or reduce them. Bounded
+   potential-based shaping rewards changes in puck progress and paddle
+   alignment, with a small penalty for abrupt command changes.
+3. **Separate difficulty training.** The common PPO foundation initializes
+   four runs with different seeds and fixed observation delays. These runs use
+   generalized state-dependent exploration, refreshing noise every eight
+   decisions to explore coherent strokes. They also add frozen learned
+   opponents to the pool. Each selected actor completed **4,030,464 additional
+   PPO transitions**.
+
+The strategic recipe uses 64 arenas across four Godot processes, 512 decisions
+per arena per rollout, gamma 0.999, and GAE lambda 0.995. Its first million
+transitions retain a small first-contact bonus; subsequent training removes
+that bonus and reduces shaping. The exact recipes live in
+[`training/configs/`](training/configs/).
+
+| Profile | Training seed | Observation delay |
+| --- | ---: | ---: |
+| Easy | 59 | 250 ms |
+| Medium | 53 | 183 ms |
+| Hard | 47 | 117 ms |
+| Insane | 43 | 83 ms |
+
+These are different learned weights as well as different reaction delays.
+Deployment uses the deterministic actor output, clipped to the motor's command
+range. Model architecture, hashes, and training provenance are recorded in
+[`models/manifest.json`](models/manifest.json).
+
+Models are compared in held-out first-to-seven matches on both table sides,
+with shaping disabled. Shot panels examine actual contacts and returns;
+full matches expose scoring, stalls, and long-rally weaknesses. An unfinished
+match stays a timeout. Difficulty ranking against fixed bots is separate from
+human difficulty calibration.
+
+## Train your own policy
+
+Use Python 3.11 and [uv](https://docs.astral.sh/uv/). Dependencies are pinned in
+`training/uv.lock`. The training launcher uses the macOS setup above; on other
+systems, set `GODOT` to the absolute path of your Godot 4.5.1 executable.
 
 ```sh
 uv sync --project training --frozen
-tools/godot --headless --path . --script checks/physics_check.gd
-tools/godot --headless --path . --script checks/goal_flow_check.gd
-tools/godot --headless --path . --script checks/touch_serve_check.gd
-tools/godot --headless --path . --script checks/layout_check.gd
-tools/godot --headless --path . --script checks/cosmetics_settings_check.gd
-tools/godot --headless --path . --script checks/launch_check.gd
-tools/godot --headless --path . --script checks/observation_check.gd
-uv run --project training python training/check.py
+
+# Collect demonstrations and fit the initial actor.
+uv run --project training python training/bootstrap.py \
+  --output training/runs/bootstrap
+
+# Learn from mixed drills, then rallies.
+uv run --project training python training/train.py \
+  --config training/configs/quality.json \
+  --warm-start training/runs/bootstrap/final.zip
+
+# Fine-tune one profile with coherent exploration and frozen opponents.
+uv run --project training python training/train.py \
+  --config training/configs/strategic.json \
+  --warm-start training/runs/quality/final.zip \
+  --seed 43 --delay 10 --output training/runs/strategic-43
+
+# Export the new actor without replacing the bundled game models.
+uv run --project training python training/export_policy.py \
+  --checkpoint training/runs/strategic-43/final.zip \
+  --output training/runs/export/insane --level insane --delay 10
 ```
 
-Physics checks exercise real Godot bodies, including 100 seeded fast trajectories,
-goals, posts, strikes, corners, boundaries and resets. Contact penetration below
-two logical units for one tick is allowed; passing through the 40-unit rail is not.
-The bridge check asserts actual four-tick travel, pause while Python waits,
-isolated worlds, terminal/reset separation, timeout metadata, PPO updates and
-optimizer-preserving resume; it also measures batches of 16/32/64 arenas.
+Repeat the final training stage with the seeds and delays above to train all
+four profiles. Runs save checkpoints, configuration, optimizer/RNG state, and
+opponent snapshots locally. The repository includes deployment weights;
+original training checkpoints and run logs are not distributed. These commands
+train new policies with the current physics; they do not promise identical
+historical weights. Evaluation and export-parity tools accept `--manifest` for
+a model bundle whose checkpoint paths point to your own saved runs; the bundled
+manifest records the original actors and their historical checkpoint paths.
 
-## Train and export
+## Export the game
 
-```sh
-uv run --project training python training/bootstrap.py --output training/runs/bootstrap
-uv run --project training python training/train.py --config training/configs/quality.json --warm-start training/runs/bootstrap/final.zip
-uv run --project training python training/train.py --config training/configs/strategic.json --warm-start training/runs/quality/final.zip --seed 43 --delay 10 --output training/runs/strategic-43
-uv run --project training python training/train.py --config training/configs/smoke.json
-uv run --project training python training/train.py --config training/configs/pilot.json
-uv run --project training python training/train.py --config training/configs/full.json --resume training/runs/pilot/final.zip
-uv run --project training python training/export_policy.py --checkpoint training/runs/full/final.zip --output models/insane --level insane --delay 10
-```
+Use the **Web** or **Android** preset in Godot's export dialog. Web needs the
+matching export templates; Android additionally needs an Android SDK, JDK, and
+Gradle template. On macOS, `tools/android-project.sh` prepares the Gradle project
+after the SDK and Java paths are configured in Godot.
 
-Selected SB3 checkpoints, RNG, and frozen opponents are retained in
-[training/checkpoints/](training/checkpoints/README.md), so a fresh clone can
-evaluate the shipped actors and resume training. The bootstrap teacher is
-confined to training; gameplay always uses the selected neural actor.
-
-The selected checkpoints retain the original training physics hash. Their
-exact weights passed a fresh full tournament after the angled-goal correction;
-the new motor passes difficulty ordering, but two strong-baseline matches
-time out even at 30 simulation minutes. Its full qualification remains failed;
-export/resume compatibility approval is intentionally blocked.
-Re-export them with the explicit compatibility report:
+To build and serve the web version locally:
 
 ```sh
-uv run --project training python training/export_policy.py --checkpoint training/checkpoints/insane/final.zip --output models/insane --level insane --delay 10 --physics-validation validation/difficulty-touch-motor.json
-uv run --project training python checks/checkpoint_physics_check.py
-```
-
-Resume instructions in the checkpoint directory use the same report. New
-training runs record the current Arena hash. Collision geometry, masses,
-speed limits, damping and observation encoding remain unchanged. The shared
-motor now accelerates at 40,000 table units/s² and stops requesting motion into
-the rails.
-
-```sh
-uv run --project training python training/parity.py
-uv run --project training python training/quality_probe.py --checkpoint training/checkpoints/insane/final.zip --processes 4 --trace --output validation/quality-probe.json
-uv run --project training python training/evaluate.py --matches 400 --processes 32 --arenas 8 --max-decisions 27000 --baselines intercept puck_chase
-```
-
-Parity generates ignored real-rollout fixtures for QA exports. Quality probes
-use fixed per-world quotas and seed each task independently. Tournaments use
-both sides, real first-to-seven outcomes, and explicit censoring; a long match
-is never converted into a win. Gameplay and nominal evaluation share serves
-and launch history. Evaluation durations exclude frozen presentation time.
-
-Use `--seed`, `--delay`, and `--output` for independent seeds and profile runs.
-Delays are Easy=30, Medium=22, Hard=14 and Insane=10 ticks. Train each chosen
-checkpoint under its shipped delay. Configurations state aggregate transitions,
-curriculum, rewards, architecture and every PPO hyperparameter. `GODOT` overrides
-the engine launcher for a Linux checkout. The shared Arena is the environment;
-Python contains no substitute physics or PPO implementation.
-
-Checkpoints retain SB3's critic/optimizer and exploration variance. Clean
-interruption saves `final.zip`, Python/NumPy/Torch RNG, config, timings and a
-frozen-opponent pool. Resume preserves optimizer state; it begins fresh rallies.
-Opponent checkpoints are fixed within episodes, never hot-swapped mid-rally.
-
-Runtime actors are little-endian row-major FP32 `52 → 64 → 64 → 2`, tanh hidden
-layers, and clipped means. Only the selected actor loads during gameplay. The
-ONNX companion accepts the same **already normalized 52-vector** described in
-`models/schema.json`; it includes output clipping. Vector-length capping belongs
-to the shared motor. Physics/source, schema, checkpoint and weight hashes travel
-with the model bundle. Incompatible/missing models stop Play with a visible error.
-
-## Build and serve
-
-```sh
-mkdir -p builds/web builds/android builds/training
-tools/android-project.sh
+mkdir -p builds/web
 tools/godot --headless --path . --export-release Web builds/web/index.html
-tools/godot --headless --path . --export-debug Android builds/android/air-hockey-debug.apk
-tools/godot --headless --path . --export-debug AndroidAAB builds/android/air-hockey-debug.aab
-tools/godot --headless --path . --export-release TrainingLinux builds/training/air-hockey.x86_64
-uv run --project training python checks/build_check.py
-uv run --project training python -m http.server 8765 --bind 127.0.0.1 --directory builds/web
+uv run --project training python -m http.server 8765 \
+  --bind 127.0.0.1 --directory builds/web
 ```
 
-Open <http://127.0.0.1:8765/index.html>. The root route redirects to this cached
-entry point. Python's server sends `.wasm` as `application/wasm`.
-Production hosting needs HTTPS for PWA storage. Single-threaded WebGL 2 export
-does not require isolation headers. Let the service worker finish caching before
-going offline; after the first registration, reload once online to populate the
-large WASM/PCK cache before checking offline startup. Browser eviction/private
-storage can prevent persistent caching.
-After a local rebuild, close the old game tab and reopen it so the waiting
-service-worker version can activate. Keep the full export together.
-Android bundles all assets and needs no network permission.
+Open [localhost:8765/index.html](http://127.0.0.1:8765/index.html). Host all exported
+files together over HTTPS for PWA caching. Allow assets to cache and reload once
+online before using the web app offline. Android bundles its assets and models.
+Build output and signing credentials stay outside version control.
 
-In Godot Editor Settings set the Android SDK and Java SDK (Android Studio's JBR
-works on the tested host). Debug signing uses the engine's local debug key;
-private keys are ignored. The Android Gradle template belongs in `android/build`
-and is generated from the matching `android_source.zip`. Open that folder in
-Android Studio. AAB export requires the Gradle build and user-owned release
-signing credentials; the included AAB preset can also produce a debug-signed
-bundle. No store publication is part of this project.
+## Explore the source
 
-For an actual native regression on a **disposable** AVD, first generate parity
-fixtures, then build/install the QA APK. The harness clears only this game's
-test data and disables networking in that named AVD:
+| Directory | Contents |
+| --- | --- |
+| `scenes/`, `scripts/` | Shared arena, physics bodies, controls, UI, observations, actor inference |
+| `resources/`, `assets/` | Physics constants, table finishes, artwork, and audio |
+| `models/` | Four deployment actors, ONNX companions, and model contracts |
+| `training/` | Godot/Python bridge, demonstrations, PPO, evaluation, and export tools |
+| `checks/` | Runnable physics, UI, bridge, and model regression checks |
+| `tools/` | Engine setup and Android project helpers |
 
-```sh
-tools/godot --headless --path . --export-debug AndroidQA builds/android/air-hockey-qa.apk
-adb -s emulator-5554 install -r builds/android/air-hockey-qa.apk
-uv run --project training python checks/android_e2e.py --serial emulator-5554 --port 5037 --apk builds/android/air-hockey-qa.apk --soak
-adb -s emulator-5554 shell run-as com.shreyansh26.glide cat files/qa-soak.json
-```
-
-The command starts a 20-minute **active** soak after the four-level regression;
-it does not wait for completion. Verify `soak_complete` and at least 1200 active
-seconds in the final report. WebQA provides the same `physics`, `parity`, and
-`soak` commands through its visible QA input. Production builds exclude QA.
-
-WebQA also accepts `{"type":"telemetry","enabled":false}` to stop periodic
-publishing, `{"type":"snapshot"}` for one sample, and
-`{"type":"silence","seconds":45}` to pause all QA processing temporarily.
-These diagnostic controls leave the game running. Memory/performance limits
-and metric definitions are recorded in [the validation report](validation/STATUS.md).
-
-## Layout
-
-`scenes/` contains the main, independent arena and shared paddle. `scripts/`
-contains bodies, controls, drawing, state history and tiny actor inference.
-`resources/physics.tres` holds frozen physical constants. Gameplay renders an
-unscaled isolated `World2D` through a viewport texture; resizing the display
-never rescales the physics. Presentation uniformly fits the texture to the
-screen with the same invertible mapping for touch; circles remain round and
-body artwork stays aligned with its collider projection on every device.
-The unchanged logical dimensions, body motors and trained weights require no
-retraining for this display change. `models/` holds deployment assets. `training/`
-contains the headless bridge and Python tools; `checks/` holds runnable
-regressions. Production export presets exclude training and checks.
-
-All cosmetics affect drawing only. A damaged settings file recovers to defaults;
-unavailable browser storage leaves the game playable for the current session.
-The game pauses on background/focus loss and requires explicit resume. Extra
-touch IDs are ignored; release/cancel/pause clears the shared motor command.
-
-The original Glide boot artwork replaces the engine splash. A silent,
-nonblocking half-second intro fades into the ready menu; Reduced effects skips
-it. To regenerate its PNG from the SVG, run the launch check with `-- --regenerate`.
-
-Original assets and upstream adaptations are documented in [THIRD_PARTY.md](THIRD_PARTY.md).
+Original artwork and upstream license notices are documented in
+[`THIRD_PARTY.md`](THIRD_PARTY.md).

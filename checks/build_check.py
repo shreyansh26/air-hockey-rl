@@ -71,6 +71,7 @@ def main():
         result = audit(files, manifest)
         result.update(bytes=path.stat().st_size, sha256=sha256(path.read_bytes()).hexdigest(), signing="debug key")
         report["artifacts"][extension] = result
+    (ROOT / "validation").mkdir(parents=True, exist_ok=True)
     (ROOT / "validation/builds.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
 

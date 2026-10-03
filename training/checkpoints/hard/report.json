@@ -1,9 +1,0 @@
-{
-  "transitions": 4030464,
-  "wall_seconds": 475.387055764033,
-  "bridge_seconds": 316.3204693410662,
-  "physics_hash": "924926effa4dbbfecbab1b1e6a48fa1aa5618eb4170c5e30fd2a6edb90c132d6",
-  "seed": 47,
-  "delay_ticks": 14,
-  "checkpoint": "/mnt/ssd1/shreyansh/home_dir/air-hockey-codex-20261001/training/runs/strategic-47/final.zip"
-}

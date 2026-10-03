@@ -1,28 +1,18 @@
-# Licenses and pinned sources
+# Artwork and third-party licenses
 
-Glide artwork (`icon.svg`, adaptive icons, boot-splash SVG/PNG, pause/switch/slider SVGs, procedural table shader and body drawings) and
-`impact.wav` (a synthesized PCM hit) were created for this project. No reference
-screenshot artwork is included. The default font is the Godot-bundled Noto Sans
-(SIL Open Font License). Godot 4.5.1 is MIT licensed.
+Glide's icons, splash artwork, UI artwork, procedural table and body drawings,
+and synthesized `impact.wav` were created for this project. The default font
+is Godot's bundled Noto Sans, licensed under the SIL Open Font License.
+Godot 4.5.1 is MIT licensed.
 
-The training transport extends `godot_rl.core.godot_env.GodotEnv`; the VecEnv
-boundary uses SB3's `VecEnv` and `VecExtractDictObs` rather than a custom network
-or learner. Python source revision:
-`edbeeching/godot_rl_agents@207b6f476f5846f33d08b92c7a350147e7b78bf5`.
-The audited GDScript Sync source revision:
-`edbeeching/godot_rl_agents_plugin@998c357a0cd09b37f40a36d70c7867fc9f682338`.
+Training uses Stable-Baselines3 PPO, PyTorch, Gymnasium, and Godot RL Agents.
+Pinned Python dependencies are recorded in `training/pyproject.toml` and
+`training/uv.lock`.
 
-The narrow Sync adaptation preserves the 4-byte little-endian JSON framing and
-handshake/env_info/action/reset messages. It removes ONNX/.NET/demo paths,
-uses 120 Hz with time scale 1, pauses at the synchronized four-step boundary,
-isolates worlds, validates packets, reports termination/truncation independently,
-and preserves final observations before resetting. The Python adaptation fixes
-tokenization of `--fixed-fps 120`, binds loopback with finite timeouts, rejects
-EOF/oversized packets, and owns child/socket cleanup. PPO is unmodified SB3.
+The Godot/Python transport adapts the MIT-licensed Godot RL Agents projects:
 
-Upstream's dependency constraints require SB3 <=2.4 and Gymnasium <=1.0. This
-project therefore pins SB3 2.4.0, Gymnasium 1.0.0 and NumPy 1.26.4, together with
-PyTorch 2.8.0. Exact transitive versions are in `training/uv.lock`.
+- Python: `edbeeching/godot_rl_agents@207b6f476f5846f33d08b92c7a350147e7b78bf5`
+- GDScript Sync: `edbeeching/godot_rl_agents_plugin@998c357a0cd09b37f40a36d70c7867fc9f682338`
 
 ## Godot RL Agents MIT license
 
