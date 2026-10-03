@@ -321,7 +321,7 @@ func _menu() -> void:
 		var repository := _button("View on GitHub", func(): OS.shell_open("https://github.com/shreyansh26/air-hockey-rl"))
 		repository.name = "RepositoryLink"
 		repository.icon = preload("res://assets/github.svg")
-		repository.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		repository.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		repository.flat = true
 		repository.custom_minimum_size.y = 64
 		repository.add_theme_font_size_override("font_size", 20)
