@@ -3,7 +3,7 @@
 <h1>Glide · Air Hockey</h1>
 <p><strong>A small arcade game with an opponent trained through reinforcement learning.</strong></p>
 <p>Godot 4.5.1 · Web &amp; Android · Python + PyTorch · PPO · Local inference</p>
-<p><a href="https://shreyansh26.github.io/air-hockey-rl/">Play in your browser</a> · Public playtest</p>
+<p><a href="https://shreyansh26.github.io/air-hockey-rl/">Play in your browser</a></p>
 
 </div>
 
@@ -28,10 +28,6 @@ with all inference running on the device.
 - **Local settings**, optional sound and haptics, and reduced effects.
 - **Offline Android play** and a web PWA that can work offline after caching.
 
-The project is experimental. Long-rally robustness, web memory behavior, and
-performance on physical devices still need work; difficulty names have not been
-calibrated against human skill levels.
-
 ## Browser deployment
 
 [Play Glide](https://shreyansh26.github.io/air-hockey-rl/) on GitHub Pages.
@@ -44,9 +40,7 @@ preset. Pull requests build a downloadable preview artifact; pushes to `main`
 deploy the same export through GitHub Actions. Generated builds stay out of Git.
 GitHub Pages must use **GitHub Actions** as its publishing source.
 
-The public site is the current experimental playtest, not a new model
-qualification. The unresolved long-rally, memory, performance, and human
-calibration limits above still apply. Browsers need WebAssembly and WebGL 2.
+Browsers need WebAssembly and WebGL 2.
 
 ## Run locally
 
