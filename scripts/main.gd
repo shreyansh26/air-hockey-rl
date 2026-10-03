@@ -318,9 +318,10 @@ func _menu() -> void:
 	_button("Customize", _customize)
 	_button("Settings", _settings_menu)
 	if OS.has_feature("web"):
-		var repository := _button("View on GitHub  ↗", func(): OS.shell_open("https://github.com/shreyansh26/air-hockey-rl"))
+		var repository := _button("View on GitHub", func(): OS.shell_open("https://github.com/shreyansh26/air-hockey-rl"))
 		repository.name = "RepositoryLink"
 		repository.icon = preload("res://assets/github.svg")
+		repository.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		repository.flat = true
 		repository.custom_minimum_size.y = 64
 		repository.add_theme_font_size_override("font_size", 20)
